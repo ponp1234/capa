@@ -1,4 +1,4 @@
-<!-- templates/projects.html -->
+<!-- templates/projects.html - Updated Version -->
 {% extends "base.html" %}
 
 {% block title %}Dotsh - Project Servers{% endblock %}
@@ -38,8 +38,8 @@
     }
     .projects-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
         margin-bottom: 30px;
     }
     .project-card {
@@ -50,32 +50,70 @@
         cursor: pointer;
         transition: all 0.3s;
         border: 2px solid transparent;
+        text-decoration: none;
+        color: inherit;
+        display: block;
     }
     .project-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         border-color: #667eea;
     }
+    .project-header {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+    .project-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
     .project-name {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 600;
         color: #2d3748;
         margin-bottom: 8px;
+    }
+    .project-description {
+        font-size: 14px;
+        color: #718096;
+        margin-bottom: 16px;
+        line-height: 1.5;
+        min-height: 42px;
     }
     .project-meta {
         font-size: 13px;
         color: #718096;
         margin-bottom: 16px;
+        padding: 12px;
+        background: #f7fafc;
+        border-radius: 6px;
+    }
+    .project-meta-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .project-meta-item:last-child {
+        margin-bottom: 0;
     }
     .env-badges {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
+        margin-bottom: 16px;
     }
     .env-badge {
-        padding: 4px 10px;
+        padding: 6px 12px;
         border-radius: 6px;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 600;
     }
     .env-badge.dev {
@@ -90,148 +128,41 @@
         background: #d1fae5;
         color: #065f46;
     }
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        overflow: auto;
-    }
-    .modal.active {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .modal-content {
-        background: white;
-        border-radius: 12px;
-        max-width: 1200px;
-        width: 95%;
-        max-height: 90vh;
-        overflow: auto;
-        position: relative;
-    }
-    .modal-header {
-        padding: 30px;
-        border-bottom: 2px solid #f7fafc;
-        position: sticky;
-        top: 0;
-        background: white;
-        z-index: 10;
-    }
-    .modal-close {
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        font-size: 28px;
-        font-weight: bold;
-        color: #718096;
-        cursor: pointer;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        transition: all 0.3s;
-    }
-    .modal-close:hover {
-        background: #f7fafc;
-        color: #2d3748;
-    }
-    .modal-body {
-        padding: 30px;
-    }
-    .tabs {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 24px;
-        border-bottom: 2px solid #e2e8f0;
-    }
-    .tab {
-        padding: 12px 24px;
-        cursor: pointer;
-        border: none;
-        background: none;
-        font-size: 15px;
+    .view-details {
+        margin-top: 16px;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+        border-radius: 6px;
         font-weight: 600;
-        color: #718096;
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-        transition: all 0.3s;
-    }
-    .tab:hover {
-        color: #4a5568;
-    }
-    .tab.active {
-        color: #667eea;
-        border-bottom-color: #667eea;
-    }
-    .tab-content {
-        display: none;
-    }
-    .tab-content.active {
-        display: block;
-    }
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    .summary-item {
-        background: #f7fafc;
-        padding: 16px;
-        border-radius: 8px;
-    }
-    .summary-label {
-        font-size: 12px;
-        color: #718096;
-        margin-bottom: 4px;
-    }
-    .summary-value {
-        font-size: 20px;
-        font-weight: 600;
-        color: #2d3748;
-    }
-    .compute-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    .compute-card {
-        background: white;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 16px;
-    }
-    .compute-header {
         font-size: 14px;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 12px;
+        transition: all 0.3s;
     }
-    .compute-detail {
+    .project-card:hover .view-details {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    .stats-row {
         display: flex;
+        gap: 16px;
         justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #f7fafc;
-        font-size: 13px;
+        padding-top: 12px;
+        border-top: 1px solid #e2e8f0;
     }
-    .compute-detail:last-child {
-        border-bottom: none;
+    .stat-item {
+        text-align: center;
+        flex: 1;
     }
-    .compute-label {
-        color: #718096;
-    }
-    .compute-value {
-        font-weight: 600;
+    .stat-value {
+        font-size: 20px;
+        font-weight: bold;
         color: #2d3748;
+    }
+    .stat-label {
+        font-size: 11px;
+        color: #718096;
+        text-transform: uppercase;
+        margin-top: 4px;
     }
 </style>
 
@@ -296,7 +227,7 @@
 
         <!-- Search Box -->
         <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search projects by name..." onkeyup="searchProjects()">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search projects by name or owner..." onkeyup="searchProjects()">
             <button class="search-btn" onclick="searchProjects()">
                 <svg style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none">
                     <circle cx="11" cy="11" r="8" stroke="white" stroke-width="2"/>
@@ -310,12 +241,33 @@
         <div class="projects-grid" id="projectsGrid">
             {% if projects %}
                 {% for project in projects %}
-                <div class="project-card" onclick="openProjectModal({{ project.id }})">
-                    <div class="project-name">{{ project.name }}</div>
-                    <div class="project-meta">
-                        <strong>Owner:</strong> {{ project.owner }}<br>
-                        <strong>Created:</strong> {{ project.created_at.strftime('%b %d, %Y') }}
+                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-card">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-name">{{ project.name }}</div>
+                        </div>
+                        <div class="project-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </div>
                     </div>
+                    
+                    <div class="project-description">
+                        {{ project.description or 'No description available' }}
+                    </div>
+                    
+                    <div class="project-meta">
+                        <div class="project-meta-item">
+                            <span><strong>Owner:</strong></span>
+                            <span>{{ project.owner }}</span>
+                        </div>
+                        <div class="project-meta-item">
+                            <span><strong>Created:</strong></span>
+                            <span>{{ project.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </div>
+                    
                     <div class="env-badges">
                         {% for env in project.environments %}
                         <span class="env-badge {{ env.environment_type }}">
@@ -323,7 +275,40 @@
                         </span>
                         {% endfor %}
                     </div>
-                </div>
+                    
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ project.environments|length }}</div>
+                            <div class="stat-label">Environments</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                {% set total_servers = namespace(count=0) %}
+                                {% for env in project.environments %}
+                                    {% set total_servers.count = total_servers.count + env.servers|length %}
+                                {% endfor %}
+                                {{ total_servers.count }}
+                            </div>
+                            <div class="stat-label">Servers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                {% set total_services = namespace(count=0) %}
+                                {% for env in project.environments %}
+                                    {% for server in env.servers %}
+                                        {% set total_services.count = total_services.count + server.services|length %}
+                                    {% endfor %}
+                                {% endfor %}
+                                {{ total_services.count }}
+                            </div>
+                            <div class="stat-label">Services</div>
+                        </div>
+                    </div>
+                    
+                    <div class="view-details">
+                        View Project Details →
+                    </div>
+                </a>
                 {% endfor %}
             {% else %}
                 <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #718096;">
@@ -338,206 +323,19 @@
     </div>
 </div>
 
-<!-- Project Details Modal -->
-<div id="projectModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modalProjectName" style="font-size: 28px; color: #2d3748; margin-bottom: 8px;"></h2>
-            <p id="modalProjectMeta" style="color: #718096;"></p>
-            <span class="modal-close" onclick="closeProjectModal()">&times;</span>
-        </div>
-        
-        <div class="modal-body">
-            <!-- Environment Tabs -->
-            <div class="tabs" id="envTabs"></div>
-            
-            <!-- Tab Contents -->
-            <div id="tabContents"></div>
-        </div>
-    </div>
-</div>
-
 <script>
-// Project data for modal
-const projectsData = {{ projects_json | safe }};
-
 function searchProjects() {
     const input = document.getElementById('searchInput').value.toLowerCase();
     const cards = document.querySelectorAll('.project-card');
     
     cards.forEach(card => {
-        const name = card.querySelector('.project-name').textContent.toLowerCase();
-        if (name.includes(input)) {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(input)) {
             card.style.display = 'block';
         } else {
             card.style.display = 'none';
         }
     });
 }
-
-function openProjectModal(projectId) {
-    const project = projectsData.find(p => p.id === projectId);
-    if (!project) return;
-    
-    // Set modal header
-    document.getElementById('modalProjectName').textContent = project.name;
-    document.getElementById('modalProjectMeta').textContent = 
-        `Owner: ${project.owner} • Created: ${project.created_date}`;
-    
-    // Create tabs
-    const tabsHtml = project.environments.map((env, index) => 
-        `<button class="tab ${index === 0 ? 'active' : ''}" onclick="switchTab(event, 'env${env.id}')">
-            ${env.environment_type.toUpperCase()}
-        </button>`
-    ).join('');
-    document.getElementById('envTabs').innerHTML = tabsHtml;
-    
-    // Create tab contents
-    const contentsHtml = project.environments.map((env, index) => {
-        const totalCores = env.servers.reduce((sum, s) => sum + s.cpu_cores, 0);
-        const totalRam = env.servers.reduce((sum, s) => sum + parseInt(s.ram.replace(' GB', '')), 0);
-        const totalStorage = env.servers.reduce((sum, s) => sum + parseFloat(s.storage.replace(' TB', '').replace(' GB', '')), 0);
-        const avgCpu = (env.servers.reduce((sum, s) => sum + s.cpu_usage, 0) / env.servers.length).toFixed(1);
-        
-        return `
-            <div id="env${env.id}" class="tab-content ${index === 0 ? 'active' : ''}">
-                <!-- Environment Summary -->
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <div class="summary-label">Total Servers</div>
-                        <div class="summary-value">${env.servers.length}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Total CPU Cores</div>
-                        <div class="summary-value">${totalCores}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Total RAM</div>
-                        <div class="summary-value">${totalRam} GB</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Total Storage</div>
-                        <div class="summary-value">${totalStorage.toFixed(2)} TB</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Avg CPU Usage</div>
-                        <div class="summary-value">${avgCpu}%</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Region</div>
-                        <div class="summary-value">${env.region}</div>
-                    </div>
-                </div>
-                
-                <!-- Server Compute Details -->
-                <h3 style="font-size: 18px; color: #2d3748; margin-bottom: 16px;">Server Details</h3>
-                <div class="compute-grid">
-                    ${env.servers.map(server => `
-                        <div class="compute-card">
-                            <div class="compute-header">
-                                ${server.name}
-                                <span class="status-badge ${server.status}" style="float: right; font-size: 10px;">
-                                    ${server.status.toUpperCase()}
-                                </span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">IP Address</span>
-                                <span class="compute-value">${server.ip_address}</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">Operating System</span>
-                                <span class="compute-value">${server.os}</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">CPU Cores</span>
-                                <span class="compute-value">${server.cpu_cores} Cores</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">CPU Usage</span>
-                                <span class="compute-value">${server.cpu_usage}%</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">RAM</span>
-                                <span class="compute-value">${server.ram}</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">RAM Usage</span>
-                                <span class="compute-value">${server.ram_usage}%</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">Storage</span>
-                                <span class="compute-value">${server.storage}</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">Storage Used</span>
-                                <span class="compute-value">${server.storage_used}%</span>
-                            </div>
-                            <div class="compute-detail">
-                                <span class="compute-label">Uptime</span>
-                                <span class="compute-value">${server.uptime}</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <!-- Services Table -->
-                <h3 style="font-size: 18px; color: #2d3748; margin-bottom: 16px;">Running Services</h3>
-                <div class="content-section" style="padding: 0;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Server</th>
-                                <th>Service</th>
-                                <th>Port</th>
-                                <th>Status</th>
-                                <th>Response Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${env.servers.map(server => 
-                                server.services.map(service => `
-                                    <tr>
-                                        <td><strong>${server.name}</strong></td>
-                                        <td>${service.name}</td>
-                                        <td>${service.port}</td>
-                                        <td><span class="status-badge ${service.status}">${service.status.toUpperCase()}</span></td>
-                                        <td>${service.response_time}</td>
-                                    </tr>
-                                `).join('')
-                            ).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    }).join('');
-    document.getElementById('tabContents').innerHTML = contentsHtml;
-    
-    // Show modal
-    document.getElementById('projectModal').classList.add('active');
-}
-
-function closeProjectModal() {
-    document.getElementById('projectModal').classList.remove('active');
-}
-
-function switchTab(event, tabId) {
-    // Remove active class from all tabs and contents
-    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    
-    // Add active class to clicked tab and corresponding content
-    event.target.classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('projectModal');
-    if (event.target == modal) {
-        closeProjectModal();
-    }
-}
 </script>
 {% endblock %}
-

@@ -11,6 +11,7 @@ app.secret_key = secrets.token_hex(16)
 
 # Database configuration
 # IMPORTANT: Update with your PostgreSQL credentials
+# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin@localhost:5432/dotsh_monitoring'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -113,6 +114,118 @@ class Alert(db.Model):
     
     server = db.relationship('Server', backref='alerts')
 
+# ========================================
+# Add these models to your app.py
+# ========================================
+
+class CapacityDataProd(db.Model):
+    __tablename__ = 'capacity_data_prod'
+    __table_args__ = {'schema': 'public'}
+    
+    name = db.Column('Name', db.String(255), primary_key=True)
+    cpu_overcommit_ratio = db.Column("CPU|Current Overcommit Ratio", db.Float)
+    cpu_usable_cores = db.Column("CPU|Number of usable CPUs (Cores)", db.Integer)
+    cpu_demand_highest_workload = db.Column("CPU|Demand|Highest Host Workload (%)", db.Float)
+    cpu_worst_vm_ready = db.Column("CPU|Worst VM CPU Ready (%)", db.String(255))
+    cpu_demand_percent = db.Column("CPU|Demand (%)", db.Float)
+    memory_usable_capacity = db.Column("Memory|Usable Capacity", db.Float)
+    memory_allocated_consumers = db.Column("Memory|Memory Allocated on all Powered On Consumers", db.Float)
+    memory_consumed = db.Column("Memory|Consumed", db.Float)
+    memory_overcommit_ratio = db.Column("Memory|Current Overcommit Ratio", db.Float)
+    disk_usable_capacity_ha_buffer = db.Column("Disk Space|Allocation|Usable Capacity after HA and Buffer", db.Float)
+    disk_total_capacity = db.Column("Disk Space|Total Capacity", db.Float)
+    disk_total_provisioned = db.Column("Disk Space|Total Provisioned Disk Space", db.Float)
+    disk_utilization = db.Column("Disk Space|Utilization", db.Float)
+    disk_overcommit_ratio = db.Column("Disk Space|Current Overcommit Ratio", db.Float)
+    vsphere_tag = db.Column("Summary|vSphere Tag", db.String(255))
+
+class CapacityDataStage(db.Model):
+    __tablename__ = 'capacity_data_stage'
+    __table_args__ = {'schema': 'public'}
+    
+    name = db.Column('Name', db.String(255), primary_key=True)
+    cpu_overcommit_ratio = db.Column("CPU|Current Overcommit Ratio", db.Float)
+    cpu_usable_cores = db.Column("CPU|Number of usable CPUs (Cores)", db.Integer)
+    cpu_demand_highest_workload = db.Column("CPU|Demand|Highest Host Workload (%)", db.Float)
+    cpu_worst_vm_ready = db.Column("CPU|Worst VM CPU Ready (%)", db.String(255))
+    cpu_demand_percent = db.Column("CPU|Demand (%)", db.Float)
+    memory_usable_capacity = db.Column("Memory|Usable Capacity", db.Float)
+    memory_allocated_consumers = db.Column("Memory|Memory Allocated on all Powered On Consumers", db.Float)
+    memory_consumed = db.Column("Memory|Consumed", db.Float)
+    memory_overcommit_ratio = db.Column("Memory|Current Overcommit Ratio", db.Float)
+    disk_usable_capacity_ha_buffer = db.Column("Disk Space|Allocation|Usable Capacity after HA and Buffer", db.Float)
+    disk_total_capacity = db.Column("Disk Space|Total Capacity", db.Float)
+    disk_total_provisioned = db.Column("Disk Space|Total Provisioned Disk Space", db.Float)
+    disk_utilization = db.Column("Disk Space|Utilization", db.Float)
+    disk_overcommit_ratio = db.Column("Disk Space|Current Overcommit Ratio", db.Float)
+    vsphere_tag = db.Column("Summary|vSphere Tag", db.String(255))
+
+
+# ========================================
+# Updated capacity route in app.py
+# ========================================
+
+@app.route('/capacity')
+def capacity():
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
+    # Fetch ESXI cluster capacity data
+    prod_clusters = CapacityDataProd.query.all()
+    stage_clusters = CapacityDataStage.query.all()
+    
+    # Calculate summary statistics for Production
+    prod_summary = {
+        'total_clusters': len(prod_clusters),
+        'total_cpu_cores': sum(c.cpu_usable_cores or 0 for c in prod_clusters),
+        'avg_cpu_demand': round(sum(c.cpu_demand_percent or 0 for c in prod_clusters) / len(prod_clusters), 2) if prod_clusters else 0,
+        'total_memory_capacity': round(sum(c.memory_usable_capacity or 0 for c in prod_clusters) / 1024, 2),  # Convert to TB
+        'total_memory_consumed': round(sum(c.memory_consumed or 0 for c in prod_clusters) / 1024, 2),
+        'total_disk_capacity': round(sum(c.disk_total_capacity or 0 for c in prod_clusters) / 1024, 2),  # Convert to TB
+        'total_disk_provisioned': round(sum(c.disk_total_provisioned or 0 for c in prod_clusters) / 1024, 2),
+        'avg_cpu_overcommit': round(sum(c.cpu_overcommit_ratio or 0 for c in prod_clusters) / len(prod_clusters), 2) if prod_clusters else 0,
+        'avg_memory_overcommit': round(sum(c.memory_overcommit_ratio or 0 for c in prod_clusters) / len(prod_clusters), 2) if prod_clusters else 0,
+    }
+    
+    # Calculate summary statistics for Stage
+    stage_summary = {
+        'total_clusters': len(stage_clusters),
+        'total_cpu_cores': sum(c.cpu_usable_cores or 0 for c in stage_clusters),
+        'avg_cpu_demand': round(sum(c.cpu_demand_percent or 0 for c in stage_clusters) / len(stage_clusters), 2) if stage_clusters else 0,
+        'total_memory_capacity': round(sum(c.memory_usable_capacity or 0 for c in stage_clusters) / 1024, 2),
+        'total_memory_consumed': round(sum(c.memory_consumed or 0 for c in stage_clusters) / 1024, 2),
+        'total_disk_capacity': round(sum(c.disk_total_capacity or 0 for c in stage_clusters) / 1024, 2),
+        'total_disk_provisioned': round(sum(c.disk_total_provisioned or 0 for c in stage_clusters) / 1024, 2),
+        'avg_cpu_overcommit': round(sum(c.cpu_overcommit_ratio or 0 for c in stage_clusters) / len(stage_clusters), 2) if stage_clusters else 0,
+        'avg_memory_overcommit': round(sum(c.memory_overcommit_ratio or 0 for c in stage_clusters) / len(stage_clusters), 2) if stage_clusters else 0,
+    }
+    
+    return render_template('capacity.html',
+                         prod_clusters=prod_clusters,
+                         stage_clusters=stage_clusters,
+                         prod_summary=prod_summary,
+                         stage_summary=stage_summary)
+
+
+# ========================================
+# Helper function to format numbers
+# ========================================
+
+def format_bytes(bytes_value):
+    """Convert bytes to human readable format"""
+    if bytes_value is None:
+        return "0 GB"
+    
+    # Assuming input is in GB
+    if bytes_value >= 1024:
+        return f"{bytes_value / 1024:.2f} TB"
+    else:
+        return f"{bytes_value:.2f} GB"
+
+
+# Add this to your Jinja2 template filters
+app.jinja_env.filters['format_bytes'] = format_bytes
+
 # ==========================================
 # ROUTES
 # ==========================================
@@ -160,13 +273,6 @@ def dashboard():
                          active_alerts=active_alerts,
                          avg_cpu=int(avg_cpu))
 
-@app.route('/capacity')
-def capacity():
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-    
-    capacities = ServerCapacity.query.all()
-    return render_template('capacity.html', capacities=capacities)
 
 @app.route('/projects')
 def projects():
@@ -229,6 +335,58 @@ def projects():
     return render_template('projects.html', 
                          projects=projects,
                          projects_json=json.dumps(projects_data))
+
+@app.route('/project/<int:project_id>')
+def project_detail(project_id):
+    """View detailed information about a specific project"""
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
+    # Fetch the project with all related data
+    project = Project.query.get_or_404(project_id)
+    
+    # Prepare environment data
+    environments_data = []
+    for env in project.environments:
+        env_dict = {
+            'id': env.id,
+            'type': env.environment_type,
+            'region': env.region or 'Unknown',
+            'servers': []
+        }
+        
+        for server in env.servers:
+            server_dict = {
+                'id': server.id,
+                'name': server.name,
+                'ip_address': server.ip_address,
+                'os': server.os,
+                'status': server.status,
+                'cpu_cores': server.cpu_cores,
+                'cpu_usage': server.cpu_usage,
+                'ram': server.ram,
+                'ram_usage': server.ram_usage,
+                'storage': server.storage,
+                'storage_used': server.storage_used,
+                'uptime': server.uptime,
+                'services': []
+            }
+            
+            for service in server.services:
+                server_dict['services'].append({
+                    'name': service.name,
+                    'port': service.port,
+                    'status': service.status,
+                    'response_time': service.response_time
+                })
+            
+            env_dict['servers'].append(server_dict)
+        
+        environments_data.append(env_dict)
+    
+    return render_template('project_detail.html',
+                         project=project,
+                         environments=environments_data)
 
 @app.route('/alerts')
 def alerts():
@@ -527,6 +685,5 @@ def init_db():
 # ==========================================
 
 if __name__ == '__main__':
-
-    print("Server started on port 5000")
+    init_db()
     app.run(debug=True, host='0.0.0.0', port=5000)
