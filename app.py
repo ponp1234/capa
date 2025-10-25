@@ -558,30 +558,271 @@ def login_post():
     
     flash('Invalid email or password', 'error')
     return redirect(url_for('login'))
+# ========================================
+# UPDATED DASHBOARD ROUTE - Add to your app.py
+# ========================================
+
+# ========================================
+# UPDATED DASHBOARD ROUTE - Add to your app.py
+# (Removes server snapshots, adds top 10 apps)
+# ========================================
+# ========================================
+# UPDATED DASHBOARD ROUTE - Add to your app.py
+# ========================================
+# ========================================
+# UPDATED DASHBOARD ROUTE - Add to your app.py
+# (Removes server snapshots, adds top 10 apps)
+# ========================================
 
 @app.route('/dashboard')
 def dashboard():
     if 'logged_in' not in session:
         return redirect(url_for('login'))
     
-    # Fetch data from database
-    servers = Server.query.all()
-    total_servers = len(servers)
-    active_projects = Project.query.count()
-    active_alerts = Alert.query.count()
+    # Get production servers
+    prod_servers = LobInventory1.query.all()
+    total_prod_servers = len(prod_servers)
     
-    # Calculate average CPU
-    avg_cpu = db.session.query(db.func.avg(Server.cpu)).scalar() or 0
+    # Get staging servers
+    stage_servers = LobInventoryStg.query.all()
+    total_stage_servers = len(stage_servers)
+    
+    # Total servers across both environments
+    total_servers = total_prod_servers + total_stage_servers
+    
+    # Count unique LOBs (active projects)
+    prod_lobs = db.session.query(LobInventory1.lob).distinct().filter(LobInventory1.lob.isnot(None)).count()
+    stage_lobs = db.session.query(LobInventoryStg.lob).distinct().filter(LobInventoryStg.lob.isnot(None)).count()
+    active_projects = max(prod_lobs, stage_lobs)  # Use the higher count
+    
+    # Count servers with issues (powered off, warnings, errors)
+    prod_alerts = LobInventory1.query.filter(
+        db.or_(
+            LobInventory1.guest_power_state == 'poweredOff',
+            LobInventory1.warn_orphan.isnot(None),
+            LobInventory1.warn_vm_size.isnot(None),
+            LobInventory1.error_vm_image.isnot(None)
+        )
+    ).count()
+    
+    stage_alerts = LobInventoryStg.query.filter(
+        db.or_(
+            LobInventoryStg.guest_power_state == 'poweredOff',
+            LobInventoryStg.warn_orphan.isnot(None),
+            LobInventoryStg.warn_vm_size.isnot(None),
+            LobInventoryStg.error_vm_image.isnot(None)
+        )
+    ).count()
+    
+    active_alerts = prod_alerts + stage_alerts
+    
+    # Calculate average vCPU utilization (as a metric)
+    avg_vcpu_prod = db.session.query(db.func.avg(LobInventory1.vc_vm_vcpu)).filter(
+        LobInventory1.vc_vm_vcpu.isnot(None)
+    ).scalar() or 0
+    avg_vcpu_stage = db.session.query(db.func.avg(LobInventoryStg.vc_vm_vcpu)).filter(
+        LobInventoryStg.vc_vm_vcpu.isnot(None)
+    ).scalar() or 0
+    avg_cpu = int((avg_vcpu_prod + avg_vcpu_stage) / 2)
+    
+    # Get infrastructure distribution
+    infra_stats = {
+        'production': {},
+        'staging': {}
+    }
+    
+    # Production infrastructure
+    prod_infra = db.session.query(
+        LobInventory1.infra, 
+        db.func.count(LobInventory1.id)
+    ).filter(LobInventory1.infra.isnot(None)).group_by(LobInventory1.infra).all()
+    
+    for infra, count in prod_infra:
+        infra_stats['production'][infra] = count
+    
+    # Staging infrastructure
+    stage_infra = db.session.query(
+        LobInventoryStg.infra, 
+        db.func.count(LobInventoryStg.id)
+    ).filter(LobInventoryStg.infra.isnot(None)).group_by(LobInventoryStg.infra).all()
+    
+    for infra, count in stage_infra:
+        infra_stats['staging'][infra] = count
+    
+    # Get LOB distribution
+    lob_stats = []
+    lobs = db.session.query(LobInventory1.lob).distinct().filter(LobInventory1.lob.isnot(None)).all()
+    
+    for lob_tuple in lobs:
+        lob = lob_tuple[0]
+        prod_count = LobInventory1.query.filter_by(lob=lob).count()
+        stage_count = LobInventoryStg.query.filter_by(lob=lob).count()
+        prod_online = LobInventory1.query.filter_by(lob=lob, guest_power_state='poweredOn').count()
+        stage_online = LobInventoryStg.query.filter_by(lob=lob, guest_power_state='poweredOn').count()
+        
+        lob_stats.append({
+            'name': lob,
+            'prod_count': prod_count,
+            'stage_count': stage_count,
+            'total_count': prod_count + stage_count,
+            'prod_online': prod_online,
+            'stage_online': stage_online,
+            'total_online': prod_online + stage_online
+        })
+    
+    # Sort by total count
+    lob_stats.sort(key=lambda x: x['total_count'], reverse=True)
+    
+    # Calculate total resources - SEPARATE FOR PROD AND STAGE
+    total_vcpu_prod = db.session.query(db.func.sum(LobInventory1.vc_vm_vcpu)).scalar() or 0
+    total_vcpu_stage = db.session.query(db.func.sum(LobInventoryStg.vc_vm_vcpu)).scalar() or 0
+    
+    total_memory_prod = db.session.query(db.func.sum(LobInventory1.vc_vm_memory_gb)).scalar() or 0
+    total_memory_stage = db.session.query(db.func.sum(LobInventoryStg.vc_vm_memory_gb)).scalar() or 0
+    
+    total_disk_prod = db.session.query(db.func.sum(LobInventory1.vc_vm_disks_total_gb)).scalar() or 0
+    total_disk_stage = db.session.query(db.func.sum(LobInventoryStg.vc_vm_disks_total_gb)).scalar() or 0
+    
+    # Get Top 10 Apps by Resource Usage
+    # We'll use app_instance as the application identifier
+    # Calculate resource score as: (vCPU * 10) + (Memory GB) + (Disk GB / 100)
+    
+    # Production apps
+    prod_apps = db.session.query(
+        LobInventory1.app_instance,
+        LobInventory1.lob,
+        db.func.count(LobInventory1.id).label('server_count'),
+        db.func.sum(LobInventory1.vc_vm_vcpu).label('total_vcpu'),
+        db.func.sum(LobInventory1.vc_vm_memory_gb).label('total_memory'),
+        db.func.sum(LobInventory1.vc_vm_disks_total_gb).label('total_disk'),
+        db.func.sum(db.case((LobInventory1.guest_power_state == 'poweredOn', 1), else_=0)).label('online_count')
+    ).filter(
+        LobInventory1.app_instance.isnot(None)
+    ).group_by(
+        LobInventory1.app_instance,
+        LobInventory1.lob
+    ).all()
+    
+    # Staging apps
+    stage_apps = db.session.query(
+        LobInventoryStg.app_instance,
+        LobInventoryStg.lob,
+        db.func.count(LobInventoryStg.id).label('server_count'),
+        db.func.sum(LobInventoryStg.vc_vm_vcpu).label('total_vcpu'),
+        db.func.sum(LobInventoryStg.vc_vm_memory_gb).label('total_memory'),
+        db.func.sum(LobInventoryStg.vc_vm_disks_total_gb).label('total_disk'),
+        db.func.sum(db.case((LobInventoryStg.guest_power_state == 'poweredOn', 1), else_=0)).label('online_count')
+    ).filter(
+        LobInventoryStg.app_instance.isnot(None)
+    ).group_by(
+        LobInventoryStg.app_instance,
+        LobInventoryStg.lob
+    ).all()
+    
+    # Combine and calculate resource scores
+    app_resources = {}
+    
+    for app in prod_apps:
+        app_key = f"{app.app_instance}_{app.lob}"
+        vcpu = app.total_vcpu or 0
+        memory = app.total_memory or 0
+        disk = app.total_disk or 0
+        
+        # Resource score calculation
+        resource_score = (vcpu * 10) + memory + (disk / 100)
+        
+        if app_key not in app_resources:
+            app_resources[app_key] = {
+                'app_instance': app.app_instance,
+                'lob': app.lob,
+                'prod_servers': 0,
+                'stage_servers': 0,
+                'total_servers': 0,
+                'prod_vcpu': 0,
+                'stage_vcpu': 0,
+                'total_vcpu': 0,
+                'prod_memory': 0,
+                'stage_memory': 0,
+                'total_memory': 0,
+                'prod_disk': 0,
+                'stage_disk': 0,
+                'total_disk': 0,
+                'prod_online': 0,
+                'stage_online': 0,
+                'resource_score': 0
+            }
+        
+        app_resources[app_key]['prod_servers'] = app.server_count
+        app_resources[app_key]['prod_vcpu'] = vcpu
+        app_resources[app_key]['prod_memory'] = memory
+        app_resources[app_key]['prod_disk'] = disk
+        app_resources[app_key]['prod_online'] = app.online_count
+        app_resources[app_key]['resource_score'] += resource_score
+    
+    for app in stage_apps:
+        app_key = f"{app.app_instance}_{app.lob}"
+        vcpu = app.total_vcpu or 0
+        memory = app.total_memory or 0
+        disk = app.total_disk or 0
+        
+        # Resource score calculation
+        resource_score = (vcpu * 10) + memory + (disk / 100)
+        
+        if app_key not in app_resources:
+            app_resources[app_key] = {
+                'app_instance': app.app_instance,
+                'lob': app.lob,
+                'prod_servers': 0,
+                'stage_servers': 0,
+                'total_servers': 0,
+                'prod_vcpu': 0,
+                'stage_vcpu': 0,
+                'total_vcpu': 0,
+                'prod_memory': 0,
+                'stage_memory': 0,
+                'total_memory': 0,
+                'prod_disk': 0,
+                'stage_disk': 0,
+                'total_disk': 0,
+                'prod_online': 0,
+                'stage_online': 0,
+                'resource_score': 0
+            }
+        
+        app_resources[app_key]['stage_servers'] = app.server_count
+        app_resources[app_key]['stage_vcpu'] = vcpu
+        app_resources[app_key]['stage_memory'] = memory
+        app_resources[app_key]['stage_disk'] = disk
+        app_resources[app_key]['stage_online'] = app.online_count
+        app_resources[app_key]['resource_score'] += resource_score
+    
+    # Calculate totals for each app
+    for app_key in app_resources:
+        app = app_resources[app_key]
+        app['total_servers'] = app['prod_servers'] + app['stage_servers']
+        app['total_vcpu'] = app['prod_vcpu'] + app['stage_vcpu']
+        app['total_memory'] = app['prod_memory'] + app['stage_memory']
+        app['total_disk'] = app['prod_disk'] + app['stage_disk']
+    
+    # Sort by resource score and get top 10
+    top_apps = sorted(app_resources.values(), key=lambda x: x['resource_score'], reverse=True)[:10]
     
     return render_template('dashboard.html', 
-                         servers=servers,
                          total_servers=total_servers,
+                         total_prod_servers=total_prod_servers,
+                         total_stage_servers=total_stage_servers,
                          active_projects=active_projects,
                          active_alerts=active_alerts,
-                         avg_cpu=int(avg_cpu))
-
-
-
+                         avg_cpu=avg_cpu,
+                         infra_stats=infra_stats,
+                         lob_stats=lob_stats,
+                         total_vcpu_prod=int(total_vcpu_prod),
+                         total_vcpu_stage=int(total_vcpu_stage),
+                         total_memory_prod=int(total_memory_prod),
+                         total_memory_stage=int(total_memory_stage),
+                         total_disk_prod=int(total_disk_prod),
+                         total_disk_stage=int(total_disk_stage),
+                         top_apps=top_apps)
 
 @app.route('/alerts')
 def alerts():

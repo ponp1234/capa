@@ -1,4 +1,4 @@
-<!-- templates/projects.html - Updated Version -->
+<!-- templates/projects_lob.html - Modified for LOB Inventory -->
 {% extends "base.html" %}
 
 {% block title %}Dotsh - Project Servers{% endblock %}
@@ -116,10 +116,6 @@
         font-size: 12px;
         font-weight: 600;
     }
-    .env-badge.dev {
-        background: #e0e7ff;
-        color: #4338ca;
-    }
     .env-badge.stage {
         background: #fef3c7;
         color: #92400e;
@@ -163,6 +159,22 @@
         color: #718096;
         text-transform: uppercase;
         margin-top: 4px;
+    }
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px;
+        color: #718096;
+    }
+    .empty-state svg {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 20px;
+        opacity: 0.3;
+    }
+    .empty-state h3 {
+        margin-bottom: 8px;
+        color: #2d3748;
     }
 </style>
 
@@ -241,7 +253,7 @@
         <div class="projects-grid" id="projectsGrid">
             {% if projects %}
                 {% for project in projects %}
-                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-card">
+                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-card" data-name="{{ project.name|lower }}" data-owner="{{ project.owner|lower }}">
                     <div class="project-header">
                         <div>
                             <div class="project-name">{{ project.name }}</div>
@@ -264,44 +276,45 @@
                         </div>
                         <div class="project-meta-item">
                             <span><strong>Created:</strong></span>
-                            <span>{{ project.created_at.strftime('%b %d, %Y') }}</span>
+                            <span>{{ project.created_at.strftime('%b %d, %Y') if project.created_at else 'N/A' }}</span>
                         </div>
                     </div>
                     
                     <div class="env-badges">
-                        {% for env in project.environments %}
-                        <span class="env-badge {{ env.environment_type }}">
-                            {{ env.environment_type|upper }}
+                        {% if project.has_prod %}
+                        <span class="env-badge prod">
+                            PRODUCTION ({{ project.prod_count }})
                         </span>
-                        {% endfor %}
+                        {% endif %}
+                        {% if project.has_stage %}
+                        <span class="env-badge stage">
+                            STAGING ({{ project.stage_count }})
+                        </span>
+                        {% endif %}
                     </div>
                     
                     <div class="stats-row">
                         <div class="stat-item">
-                            <div class="stat-value">{{ project.environments|length }}</div>
+                            <div class="stat-value">
+                                {% if project.has_prod and project.has_stage %}
+                                2
+                                {% elif project.has_prod or project.has_stage %}
+                                1
+                                {% else %}
+                                0
+                                {% endif %}
+                            </div>
                             <div class="stat-label">Environments</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">
-                                {% set total_servers = namespace(count=0) %}
-                                {% for env in project.environments %}
-                                    {% set total_servers.count = total_servers.count + env.servers|length %}
-                                {% endfor %}
-                                {{ total_servers.count }}
-                            </div>
-                            <div class="stat-label">Servers</div>
+                            <div class="stat-value">{{ project.total_count }}</div>
+                            <div class="stat-label">Total Servers</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">
-                                {% set total_services = namespace(count=0) %}
-                                {% for env in project.environments %}
-                                    {% for server in env.servers %}
-                                        {% set total_services.count = total_services.count + server.services|length %}
-                                    {% endfor %}
-                                {% endfor %}
-                                {{ total_services.count }}
+                                {% if project.has_prod %}{{ project.prod_count }}{% else %}0{% endif %}
                             </div>
-                            <div class="stat-label">Services</div>
+                            <div class="stat-label">Prod Servers</div>
                         </div>
                     </div>
                     
@@ -311,12 +324,12 @@
                 </a>
                 {% endfor %}
             {% else %}
-                <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #718096;">
-                    <svg style="width: 64px; height: 64px; margin: 0 auto 20px; opacity: 0.3;" viewBox="0 0 24 24" fill="none">
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2"/>
                     </svg>
-                    <h3 style="margin-bottom: 8px;">No Projects Found</h3>
-                    <p>Create your first project to get started</p>
+                    <h3>No Projects Found</h3>
+                    <p>No LOB inventory data available</p>
                 </div>
             {% endif %}
         </div>
@@ -329,13 +342,22 @@ function searchProjects() {
     const cards = document.querySelectorAll('.project-card');
     
     cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        if (text.includes(input)) {
+        const name = card.getAttribute('data-name') || '';
+        const owner = card.getAttribute('data-owner') || '';
+        
+        if (name.includes(input) || owner.includes(input)) {
             card.style.display = 'block';
         } else {
             card.style.display = 'none';
         }
     });
 }
+
+// Allow search on Enter key
+document.getElementById('searchInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        searchProjects();
+    }
+});
 </script>
 {% endblock %}

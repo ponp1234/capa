@@ -1,9 +1,259 @@
-<!-- templates/dashboard.html -->
+<!-- templates/dashboard.html - Updated Version 2 -->
 {% extends "base.html" %}
 
 {% block title %}Dotsh - Dashboard{% endblock %}
 
 {% block content %}
+<style>
+    .env-split-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .env-split-item {
+        padding: 8px 12px;
+        background: #f7fafc;
+        border-radius: 6px;
+        text-align: center;
+    }
+    .env-split-label {
+        font-size: 11px;
+        color: #718096;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .env-split-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2d3748;
+    }
+    .env-split-item.prod {
+        border-left: 3px solid #10b981;
+    }
+    .env-split-item.stage {
+        border-left: 3px solid #f59e0b;
+    }
+    .lob-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+    .lob-card {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+    .lob-card:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .lob-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .lob-name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2d3748;
+    }
+    .lob-total {
+        font-size: 20px;
+        font-weight: bold;
+        color: #667eea;
+    }
+    .lob-envs {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .lob-env-item {
+        flex: 1;
+        padding: 8px;
+        background: #f7fafc;
+        border-radius: 4px;
+        text-align: center;
+    }
+    .lob-env-label {
+        font-size: 10px;
+        color: #718096;
+        text-transform: uppercase;
+    }
+    .lob-env-value {
+        font-size: 14px;
+        font-weight: bold;
+        color: #2d3748;
+    }
+    .lob-env-online {
+        font-size: 11px;
+        color: #10b981;
+    }
+    .infra-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        margin: 4px;
+        background: #e0e7ff;
+        color: #4338ca;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .resource-comparison-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .resource-row {
+        display: flex;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .resource-row:last-child {
+        border-bottom: none;
+    }
+    .resource-label {
+        flex: 0 0 150px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    .resource-bars {
+        flex: 1;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .resource-bar-container {
+        flex: 1;
+        position: relative;
+    }
+    .resource-bar-label {
+        font-size: 11px;
+        color: #718096;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+    }
+    .resource-bar {
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+        position: relative;
+        overflow: hidden;
+    }
+    .resource-bar.prod {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .resource-bar.stage {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    .resource-total {
+        flex: 0 0 120px;
+        text-align: right;
+        font-size: 20px;
+        font-weight: bold;
+        color: #667eea;
+    }
+    .environment-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    .environment-badge.prod {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    .environment-badge.stage {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    .top-apps-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+    }
+    .top-apps-table thead {
+        background: #f7fafc;
+    }
+    .top-apps-table th {
+        padding: 12px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #4a5568;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .top-apps-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 14px;
+        color: #2d3748;
+    }
+    .top-apps-table tbody tr:hover {
+        background: #f7fafc;
+    }
+    .rank-badge {
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+        line-height: 28px;
+        font-weight: bold;
+        font-size: 13px;
+    }
+    .rank-badge.top-3 {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    .app-name {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    .resource-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-right: 4px;
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+    .server-count-split {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .server-count-item {
+        font-size: 12px;
+    }
+    .server-count-item .count {
+        font-weight: bold;
+        color: #2d3748;
+    }
+    .server-count-item .label {
+        color: #718096;
+    }
+</style>
+
 <div class="dashboard">
     <!-- Sidebar Navigation -->
     <div class="sidebar">
@@ -67,7 +317,7 @@
         <!-- Page Header -->
         <div class="header">
             <h1>Overview Dashboard</h1>
-            <p>Monitor your infrastructure in real-time</p>
+            <p>Monitor your LOB infrastructure in real-time</p>
         </div>
 
         <!-- Stats Cards Grid -->
@@ -85,22 +335,30 @@
                     <div class="card-title">Total Servers</div>
                 </div>
                 <div class="card-value">{{ total_servers }}</div>
-                <div class="card-change positive">↑ 2 from last week</div>
+                <div class="env-split-card">
+                    <div class="env-split-item prod">
+                        <div class="env-split-label">Production</div>
+                        <div class="env-split-value">{{ total_prod_servers }}</div>
+                    </div>
+                    <div class="env-split-item stage">
+                        <div class="env-split-label">Staging</div>
+                        <div class="env-split-value">{{ total_stage_servers }}</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Active Projects Card -->
+            <!-- Active LOBs Card -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon green">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <polyline points="22 4 12 14.01 9 11.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke-width="2"/>
                         </svg>
                     </div>
-                    <div class="card-title">Active Projects</div>
+                    <div class="card-title">Active LOBs</div>
                 </div>
                 <div class="card-value">{{ active_projects }}</div>
-                <div class="card-change positive">↑ 3 from last month</div>
+                <div class="card-change positive">Lines of Business</div>
             </div>
 
             <!-- Alerts Card -->
@@ -113,63 +371,182 @@
                             <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <div class="card-title">Alerts</div>
+                    <div class="card-title">Issues Detected</div>
                 </div>
                 <div class="card-value">{{ active_alerts }}</div>
-                <div class="card-change negative">↑ 1 from yesterday</div>
+                <div class="card-change negative">Powered Off / Warnings</div>
             </div>
 
-            <!-- Average CPU Usage Card -->
+            <!-- Average vCPU Card -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon blue">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/>
+                            <rect x="9" y="9" width="6" height="6" stroke-width="2"/>
                         </svg>
                     </div>
-                    <div class="card-title">Avg. CPU Usage</div>
+                    <div class="card-title">Avg. vCPU per VM</div>
                 </div>
-                <div class="card-value">{{ avg_cpu }}%</div>
-                <div class="card-change positive">↓ 5% from last hour</div>
+                <div class="card-value">{{ avg_cpu }}</div>
+                <div class="card-change positive">Virtual CPUs</div>
             </div>
         </div>
 
-        <!-- Server Activity Table -->
+        <!-- Resource Allocation Comparison -->
         <div class="content-section">
             <div class="section-header">
-                <h2 class="section-title">Recent Server Activity</h2>
+                <h2 class="section-title">Resource Allocation - Production vs Staging</h2>
+            </div>
+            
+            <div class="resource-comparison-card">
+                <!-- vCPU Row -->
+                <div class="resource-row">
+                    <div class="resource-label">
+                        <svg style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none">
+                            <rect x="4" y="4" width="16" height="16" rx="2" stroke="#667eea" stroke-width="2"/>
+                        </svg>
+                        vCPU
+                    </div>
+                    <div class="resource-bars">
+                        <div class="resource-bar-container">
+                            <div class="resource-bar-label">Production</div>
+                            <div class="resource-bar prod">
+                                {{ total_vcpu_prod }} cores
+                            </div>
+                        </div>
+                        <div class="resource-bar-container">
+                            <div class="resource-bar-label">Staging</div>
+                            <div class="resource-bar stage">
+                                {{ total_vcpu_stage }} cores
+                            </div>
+                        </div>
+                    </div>
+                    <div class="resource-total">
+                        {{ total_vcpu_prod + total_vcpu_stage }}
+                    </div>
+                </div>
+
+                <!-- Memory Row -->
+                <div class="resource-row">
+                    <div class="resource-label">
+                        <svg style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none">
+                            <rect x="2" y="6" width="20" height="12" rx="2" stroke="#667eea" stroke-width="2"/>
+                        </svg>
+                        Memory
+                    </div>
+                    <div class="resource-bars">
+                        <div class="resource-bar-container">
+                            <div class="resource-bar-label">Production</div>
+                            <div class="resource-bar prod">
+                                {{ total_memory_prod }} GB
+                            </div>
+                        </div>
+                        <div class="resource-bar-container">
+                            <div class="resource-bar-label">Staging</div>
+                            <div class="resource-bar stage">
+                                {{ total_memory_stage }} GB
+                            </div>
+                        </div>
+                    </div>
+                    <div class="resource-total">
+                        {{ total_memory_prod + total_memory_stage }} GB
+                    </div>
+                </div>
+
+                <!-- Disk Row -->
+                <div class="resource-row">
+                    <div class="resource-label">
+                        <svg style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="#667eea" stroke-width="2"/>
+                        </svg>
+                        Storage
+                    </div>
+                    <div class="resource-bars">
+                        <div class="resource-bar-container">
+                            <div class="resource-bar-label">Production</div>
+                            <div class="resource-bar prod">
+                                {{ (total_disk_prod / 1024)|round(1) }} TB
+                            </div>
+                        </div>
+                        <div class="resource-bar-container">
+                            <div class="resource-bar-label">Staging</div>
+                            <div class="resource-bar stage">
+                                {{ (total_disk_stage / 1024)|round(1) }} TB
+                            </div>
+                        </div>
+                    </div>
+                    <div class="resource-total">
+                        {{ ((total_disk_prod + total_disk_stage) / 1024)|round(1) }} TB
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 10 Apps by Resource Usage -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Top 10 Applications by Resource Usage</h2>
             </div>
             
             <div class="table-container">
-                <table>
+                <table class="top-apps-table">
                     <thead>
                         <tr>
-                            <th>Server Name</th>
-                            <th>Status</th>
-                            <th>CPU</th>
-                            <th>Memory</th>
-                            <th>Uptime</th>
+                            <th style="width: 50px;">Rank</th>
+                            <th>Application</th>
+                            <th>LOB</th>
+                            <th>Servers</th>
+                            <th>Total vCPU</th>
+                            <th>Total Memory</th>
+                            <th>Total Disk</th>
+                            <th>Prod / Stage Split</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if servers %}
-                            {% for server in servers %}
+                        {% if top_apps %}
+                            {% for app in top_apps %}
                             <tr>
-                                <td><strong>{{ server.name }}</strong></td>
                                 <td>
-                                    <span class="status-badge {{ server.status }}">
-                                        {{ server.status|capitalize }}
+                                    <span class="rank-badge {% if loop.index <= 3 %}top-3{% endif %}">
+                                        {{ loop.index }}
                                     </span>
                                 </td>
-                                <td>{{ server.cpu }}%</td>
-                                <td>{{ server.memory }}%</td>
-                                <td>{{ server.uptime }}</td>
+                                <td>
+                                    <div class="app-name">{{ app.app_instance }}</div>
+                                </td>
+                                <td>{{ app.lob }}</td>
+                                <td>
+                                    <strong>{{ app.total_servers }}</strong>
+                                </td>
+                                <td>
+                                    <span class="resource-badge">{{ app.total_vcpu }} cores</span>
+                                </td>
+                                <td>
+                                    <span class="resource-badge">{{ app.total_memory }} GB</span>
+                                </td>
+                                <td>
+                                    <span class="resource-badge">{{ (app.total_disk / 1024)|round(1) }} TB</span>
+                                </td>
+                                <td>
+                                    <div class="server-count-split">
+                                        <div class="server-count-item">
+                                            <span class="count">{{ app.prod_servers }}</span>
+                                            <span class="label">P</span>
+                                        </div>
+                                        <span style="color: #e2e8f0;">|</span>
+                                        <div class="server-count-item">
+                                            <span class="count">{{ app.stage_servers }}</span>
+                                            <span class="label">S</span>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 40px; color: #718096;">
-                                    No servers found. Please add servers to monitor.
+                                <td colspan="8" style="text-align: center; padding: 40px; color: #718096;">
+                                    No application data available
                                 </td>
                             </tr>
                         {% endif %}
@@ -178,48 +555,69 @@
             </div>
         </div>
 
-        <!-- Additional Server Metrics (Optional) -->
+        <!-- LOB Statistics -->
         <div class="content-section">
             <div class="section-header">
-                <h2 class="section-title">Server Health Status</h2>
+                <h2 class="section-title">LOB Distribution</h2>
             </div>
             
-            <div class="cards-grid">
-                {% for server in servers[:4] %}
-                <div class="card">
-                    <h3 style="font-size: 18px; color: #2d3748; margin-bottom: 12px;">
-                        {{ server.name }}
-                    </h3>
-                    <div style="display: flex; gap: 20px; margin-top: 16px;">
-                        <div style="flex: 1;">
-                            <div style="font-size: 12px; color: #718096; margin-bottom: 4px;">CPU</div>
-                            <div style="font-size: 20px; font-weight: bold; color: #2d3748;">
-                                {{ server.cpu }}%
-                            </div>
-                            <div class="progress-bar" style="margin-top: 8px;">
-                                <div class="progress-fill {% if server.cpu < 50 %}low{% elif server.cpu < 80 %}medium{% else %}high{% endif %}" 
-                                     style="width: {{ server.cpu }}%"></div>
-                            </div>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-size: 12px; color: #718096; margin-bottom: 4px;">Memory</div>
-                            <div style="font-size: 20px; font-weight: bold; color: #2d3748;">
-                                {{ server.memory }}%
-                            </div>
-                            <div class="progress-bar" style="margin-top: 8px;">
-                                <div class="progress-fill {% if server.memory < 50 %}low{% elif server.memory < 80 %}medium{% else %}high{% endif %}" 
-                                     style="width: {{ server.memory }}%"></div>
-                            </div>
-                        </div>
+            <div class="lob-stats-grid">
+                {% for lob in lob_stats %}
+                <div class="lob-card">
+                    <div class="lob-header">
+                        <div class="lob-name">{{ lob.name }}</div>
+                        <div class="lob-total">{{ lob.total_count }}</div>
                     </div>
-                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-                        <span class="status-badge {{ server.status }}">{{ server.status|capitalize }}</span>
-                        <span style="float: right; color: #718096; font-size: 13px;">
-                            Uptime: {{ server.uptime }}
-                        </span>
+                    <div class="lob-envs">
+                        <div class="lob-env-item">
+                            <div class="lob-env-label">Production</div>
+                            <div class="lob-env-value">{{ lob.prod_count }}</div>
+                            <div class="lob-env-online">{{ lob.prod_online }} online</div>
+                        </div>
+                        <div class="lob-env-item">
+                            <div class="lob-env-label">Staging</div>
+                            <div class="lob-env-value">{{ lob.stage_count }}</div>
+                            <div class="lob-env-online">{{ lob.stage_online }} online</div>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
+            </div>
+        </div>
+
+        <!-- Infrastructure Distribution -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Infrastructure Distribution</h2>
+            </div>
+            
+            <div class="cards-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="card">
+                    <h3 style="font-size: 18px; color: #2d3748; margin-bottom: 16px;">
+                        Production Infrastructure
+                    </h3>
+                    <div>
+                        {% for infra, count in infra_stats.production.items() %}
+                        <span class="infra-badge">{{ infra }}: {{ count }}</span>
+                        {% endfor %}
+                        {% if not infra_stats.production %}
+                        <p style="color: #718096; text-align: center; padding: 20px;">No data available</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="font-size: 18px; color: #2d3748; margin-bottom: 16px;">
+                        Staging Infrastructure
+                    </h3>
+                    <div>
+                        {% for infra, count in infra_stats.staging.items() %}
+                        <span class="infra-badge" style="background: #fef3c7; color: #92400e;">{{ infra }}: {{ count }}</span>
+                        {% endfor %}
+                        {% if not infra_stats.staging %}
+                        <p style="color: #718096; text-align: center; padding: 20px;">No data available</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
