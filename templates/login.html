@@ -1,0 +1,184 @@
+
+{% extends "base.html" %}
+{% block title %}Dotsh - Sign In{% endblock %}
+{% block content %}
+<style>
+    body {
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+    .login-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        max-width: 1000px;
+        width: 100%;
+        display: flex;
+        min-height: 600px;
+    }
+    .login-left {
+        flex: 1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 60px 40px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .logo {
+        font-size: 48px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    .logo-dot { color: #ffd700; }
+    .tagline {
+        font-size: 18px;
+        opacity: 0.9;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .feature-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke: white;
+    }
+    .login-right {
+        flex: 1;
+        padding: 60px 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .login-header h2 {
+        font-size: 32px;
+        color: #2d3748;
+        margin-bottom: 10px;
+    }
+    .login-header p {
+        color: #718096;
+        font-size: 14px;
+        margin-bottom: 40px;
+    }
+    .form-group {
+        margin-bottom: 24px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #4a5568;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 15px;
+        outline: none;
+    }
+    .form-group input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    .alert {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .alert-error {
+        background: #fed7d7;
+        color: #742a2a;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-left">
+        <div class="logo">dotsh<span class="logo-dot">.</span></div>
+        <p class="tagline">Real-time monitoring and analytics platform for modern infrastructure</p>
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div><strong>Real-time Metrics</strong><br><small style="opacity: 0.8;">Monitor your systems</small></div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div><strong>Smart Alerts</strong><br><small style="opacity: 0.8;">Get notified instantly</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-right">
+        <div class="login-header">
+            <h2>Sign in to Dotsh</h2>
+            <p>Access your monitoring dashboard</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('login_post') }}" method="POST">
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" placeholder="name@company.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign in</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

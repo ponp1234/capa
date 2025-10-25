@@ -1,0 +1,337 @@
+<!-- templates/capacity.html -->
+{% extends "base.html" %}
+
+{% block title %}Dotsh - Server Capacity{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo" onclick="location.href='{{ url_for('dashboard') }}'">
+            dotsh<span class="logo-dot">.</span>
+        </div>
+        
+        <div class="nav-menu">
+            <!-- Overview -->
+            <a href="{{ url_for('dashboard') }}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="tooltip">Overview</span>
+            </a>
+
+            <!-- Server Capacity - Active -->
+            <a href="{{ url_for('capacity') }}" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="3" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="10" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="17" width="20" height="5" rx="1" stroke-width="2"/>
+                </svg>
+                <span class="tooltip">Server Capacity</span>
+            </a>
+
+            <!-- Project Servers -->
+            <a href="{{ url_for('projects') }}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="tooltip">Project Servers</span>
+            </a>
+
+            <!-- Alerts -->
+            <a href="{{ url_for('alerts') }}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="tooltip">Alerts</span>
+            </a>
+
+            <!-- Logout -->
+            <a href="{{ url_for('logout') }}" class="nav-item nav-logout" onclick="return confirm('Are you sure you want to logout?')">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="16 17 21 12 16 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="21" y1="12" x2="9" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="tooltip">Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="header">
+            <h1>Server Capacity</h1>
+            <p>Monitor resource utilization across all servers</p>
+        </div>
+
+        <!-- Capacity Summary Cards -->
+        <div class="cards-grid">
+            <!-- Total Storage Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon purple">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Total Storage</div>
+                </div>
+                <div class="card-value">4.25 TB</div>
+                <div class="card-change positive">Available across all servers</div>
+            </div>
+
+            <!-- Average Storage Usage Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                            <path d="M12 6v6l4 2" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Avg. Storage Usage</div>
+                </div>
+                <div class="card-value">
+                    {% if capacities %}
+                        {{ (capacities | map(attribute='storage_percentage') | sum / capacities | length) | int }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="card-change {% if capacities and (capacities | map(attribute='storage_percentage') | sum / capacities | length) > 75 %}negative{% else %}positive{% endif %}">
+                    Across all servers
+                </div>
+            </div>
+
+            <!-- Total CPU Cores Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon blue">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/>
+                            <rect x="9" y="9" width="6" height="6" stroke-width="2"/>
+                            <line x1="9" y1="1" x2="9" y2="4" stroke-width="2"/>
+                            <line x1="15" y1="1" x2="15" y2="4" stroke-width="2"/>
+                            <line x1="9" y1="20" x2="9" y2="23" stroke-width="2"/>
+                            <line x1="15" y1="20" x2="15" y2="23" stroke-width="2"/>
+                            <line x1="20" y1="9" x2="23" y2="9" stroke-width="2"/>
+                            <line x1="20" y1="15" x2="23" y2="15" stroke-width="2"/>
+                            <line x1="1" y1="9" x2="4" y2="9" stroke-width="2"/>
+                            <line x1="1" y1="15" x2="4" y2="15" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Total CPU Cores</div>
+                </div>
+                <div class="card-value">
+                    {% if capacities %}
+                        {{ capacities | map(attribute='cpu_cores') | sum }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </div>
+                <div class="card-change positive">Combined processing power</div>
+            </div>
+
+            <!-- Total RAM Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon green">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 16h20" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M2 12h20" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M2 8h20" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="3" y="4" width="18" height="16" rx="2" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">Total RAM</div>
+                </div>
+                <div class="card-value">192 GB</div>
+                <div class="card-change positive">Combined memory capacity</div>
+            </div>
+        </div>
+
+        <!-- Storage Capacity Table -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Storage Capacity Details</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Server Name</th>
+                            <th>Total Storage</th>
+                            <th>Used</th>
+                            <th>Available</th>
+                            <th>Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if capacities %}
+                            {% for capacity in capacities %}
+                            <tr>
+                                <td><strong>{{ capacity.server.name }}</strong></td>
+                                <td>{{ capacity.total_storage }}</td>
+                                <td>{{ capacity.used_storage }}</td>
+                                <td>{{ capacity.available_storage }}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <span style="min-width: 40px; font-weight: 600;">{{ capacity.storage_percentage }}%</span>
+                                        <div class="progress-bar" style="flex: 1;">
+                                            <div class="progress-fill {% if capacity.storage_percentage < 50 %}low{% elif capacity.storage_percentage < 80 %}medium{% else %}high{% endif %}" 
+                                                 style="width: {{ capacity.storage_percentage }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: #718096;">
+                                    No capacity data available
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CPU & Memory Capacity Table -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">CPU & Memory Capacity</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Server Name</th>
+                            <th>CPU Cores</th>
+                            <th>CPU Usage</th>
+                            <th>Total RAM</th>
+                            <th>RAM Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if capacities %}
+                            {% for capacity in capacities %}
+                            <tr>
+                                <td><strong>{{ capacity.server.name }}</strong></td>
+                                <td>{{ capacity.cpu_cores }} Cores</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <span style="min-width: 40px; font-weight: 600;">{{ capacity.cpu_usage }}%</span>
+                                        <div class="progress-bar" style="flex: 1;">
+                                            <div class="progress-fill {% if capacity.cpu_usage < 50 %}low{% elif capacity.cpu_usage < 80 %}medium{% else %}high{% endif %}" 
+                                                 style="width: {{ capacity.cpu_usage }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ capacity.total_ram }}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <span style="min-width: 40px; font-weight: 600;">{{ capacity.ram_usage }}%</span>
+                                        <div class="progress-bar" style="flex: 1;">
+                                            <div class="progress-fill {% if capacity.ram_usage < 50 %}low{% elif capacity.ram_usage < 80 %}medium{% else %}high{% endif %}" 
+                                                 style="width: {{ capacity.ram_usage }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: #718096;">
+                                    No capacity data available
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Resource Distribution Cards -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Resource Distribution</h2>
+            </div>
+            
+            <div class="cards-grid">
+                {% if capacities %}
+                    {% for capacity in capacities %}
+                    <div class="card">
+                        <h3 style="font-size: 18px; color: #2d3748; margin-bottom: 16px;">
+                            {{ capacity.server.name }}
+                        </h3>
+                        
+                        <!-- Storage -->
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-size: 13px; color: #718096;">Storage</span>
+                                <span style="font-size: 13px; font-weight: 600; color: #2d3748;">
+                                    {{ capacity.storage_percentage }}%
+                                </span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill {% if capacity.storage_percentage < 50 %}low{% elif capacity.storage_percentage < 80 %}medium{% else %}high{% endif %}" 
+                                     style="width: {{ capacity.storage_percentage }}%"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #718096; margin-top: 4px;">
+                                {{ capacity.used_storage }} / {{ capacity.total_storage }}
+                            </div>
+                        </div>
+
+                        <!-- CPU -->
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-size: 13px; color: #718096;">CPU ({{ capacity.cpu_cores }} cores)</span>
+                                <span style="font-size: 13px; font-weight: 600; color: #2d3748;">
+                                    {{ capacity.cpu_usage }}%
+                                </span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill {% if capacity.cpu_usage < 50 %}low{% elif capacity.cpu_usage < 80 %}medium{% else %}high{% endif %}" 
+                                     style="width: {{ capacity.cpu_usage }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- RAM -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-size: 13px; color: #718096;">RAM</span>
+                                <span style="font-size: 13px; font-weight: 600; color: #2d3748;">
+                                    {{ capacity.ram_usage }}%
+                                </span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill {% if capacity.ram_usage < 50 %}low{% elif capacity.ram_usage < 80 %}medium{% else %}high{% endif %}" 
+                                     style="width: {{ capacity.ram_usage }}%"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #718096; margin-top: 4px;">
+                                {{ capacity.total_ram }} total
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <p style="text-align: center; padding: 40px; color: #718096;">
+                            No server capacity data available
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
