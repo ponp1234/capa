@@ -1,4 +1,4 @@
-<!-- templates/capacity.html - ESXI Cluster Capacity -->
+<!-- templates/capacity.html - Complete ESXI Cluster Capacity -->
 {% extends "base.html" %}
 
 {% block title %}Dotsh - ESXI Cluster Capacity{% endblock %}
@@ -149,11 +149,6 @@
         background: #fed7d7;
         color: #742a2a;
     }
-    .overcommit-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
 </style>
 
 <div class="dashboard">
@@ -223,6 +218,7 @@
 
         <!-- Production Environment -->
         <div id="prod" class="env-content active">
+            <!-- Summary Cards -->
             <div class="summary-cards">
                 <div class="summary-card purple">
                     <div class="summary-label">Total Clusters</div>
@@ -251,20 +247,24 @@
                 </div>
             </div>
 
+            <!-- Production Capacity Table -->
             <div class="cluster-table">
                 <div class="table-header">
-                    <h2 class="table-title">CPU Capacity Details</h2>
-                    <button class="export-btn" onclick="exportTable('cpu-prod')">📥 Export CSV</button>
+                    <h2 class="table-title">Cluster Capacity Details</h2>
+                    <button class="export-btn" onclick="exportTable('capacity-prod')">📥 Export CSV</button>
                 </div>
-                <table id="cpu-prod">
+                <table id="capacity-prod">
                     <thead>
                         <tr>
                             <th>Cluster Name</th>
-                            <th>Usable Cores</th>
+                            <th>CPU Cores</th>
                             <th>CPU Demand (%)</th>
-                            <th>Highest Workload (%)</th>
-                            <th>Worst VM Ready</th>
-                            <th>Overcommit Ratio</th>
+                            <th>Memory Total (GB)</th>
+                            <th>Memory Allocated (GB)</th>
+                            <th>Memory Remaining (GB)</th>
+                            <th>Disk Total (GB)</th>
+                            <th>Disk Allocated (GB)</th>
+                            <th>Disk Remaining (GB)</th>
                             <th>vSphere Tag</th>
                         </tr>
                     </thead>
@@ -277,28 +277,42 @@
                                 <td>
                                     {% if cluster.cpu_demand_percent %}
                                         <span class="metric-badge {% if cluster.cpu_demand_percent < 70 %}good{% elif cluster.cpu_demand_percent < 85 %}warning{% else %}critical{% endif %}">
-                                            {{ cluster.cpu_demand_percent }}%
+                                            {{ '%.1f'|format(cluster.cpu_demand_percent) }}%
                                         </span>
                                     {% else %}
                                         N/A
                                     {% endif %}
                                 </td>
-                                <td>{{ cluster.cpu_demand_highest_workload or 'N/A' }}%</td>
-                                <td>{{ cluster.cpu_worst_vm_ready or 'N/A' }}</td>
+                                <td>{{ '%.2f'|format(cluster.memory_usable_capacity or 0) }}</td>
+                                <td>{{ '%.2f'|format(cluster.memory_allocated_consumers or 0) }}</td>
                                 <td>
-                                    <div class="overcommit-indicator">
-                                        {{ cluster.cpu_overcommit_ratio or 'N/A' }}x
-                                        {% if cluster.cpu_overcommit_ratio and cluster.cpu_overcommit_ratio > 2 %}
-                                            <span style="color: #f56565;">⚠️</span>
-                                        {% endif %}
-                                    </div>
+                                    {% if cluster.memory_usable_capacity and cluster.memory_allocated_consumers %}
+                                        {% set mem_remaining = cluster.memory_usable_capacity - cluster.memory_allocated_consumers %}
+                                        <span class="metric-badge {% if mem_remaining > (cluster.memory_usable_capacity * 0.3) %}good{% elif mem_remaining > (cluster.memory_usable_capacity * 0.15) %}warning{% else %}critical{% endif %}">
+                                            {{ '%.2f'|format(mem_remaining) }}
+                                        </span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ '%.2f'|format(cluster.disk_total_capacity or 0) }}</td>
+                                <td>{{ '%.2f'|format(cluster.disk_total_provisioned or 0) }}</td>
+                                <td>
+                                    {% if cluster.disk_total_capacity and cluster.disk_total_provisioned %}
+                                        {% set disk_remaining = cluster.disk_total_capacity - cluster.disk_total_provisioned %}
+                                        <span class="metric-badge {% if disk_remaining > (cluster.disk_total_capacity * 0.3) %}good{% elif disk_remaining > (cluster.disk_total_capacity * 0.15) %}warning{% else %}critical{% endif %}">
+                                            {{ '%.2f'|format(disk_remaining) }}
+                                        </span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
                                 </td>
                                 <td>{{ cluster.vsphere_tag or 'N/A' }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 40px; color: #718096;">No production cluster data available</td>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #718096;">No production cluster data available</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -308,6 +322,7 @@
 
         <!-- Staging Environment -->
         <div id="stage" class="env-content">
+            <!-- Summary Cards -->
             <div class="summary-cards">
                 <div class="summary-card purple">
                     <div class="summary-label">Total Clusters</div>
@@ -336,20 +351,24 @@
                 </div>
             </div>
 
+            <!-- Staging Capacity Table -->
             <div class="cluster-table">
                 <div class="table-header">
-                    <h2 class="table-title">CPU Capacity Details</h2>
-                    <button class="export-btn" onclick="exportTable('cpu-stage')">📥 Export CSV</button>
+                    <h2 class="table-title">Cluster Capacity Details</h2>
+                    <button class="export-btn" onclick="exportTable('capacity-stage')">📥 Export CSV</button>
                 </div>
-                <table id="cpu-stage">
+                <table id="capacity-stage">
                     <thead>
                         <tr>
                             <th>Cluster Name</th>
-                            <th>Usable Cores</th>
+                            <th>CPU Cores</th>
                             <th>CPU Demand (%)</th>
-                            <th>Highest Workload (%)</th>
-                            <th>Worst VM Ready</th>
-                            <th>Overcommit Ratio</th>
+                            <th>Memory Total (GB)</th>
+                            <th>Memory Allocated (GB)</th>
+                            <th>Memory Remaining (GB)</th>
+                            <th>Disk Total (GB)</th>
+                            <th>Disk Allocated (GB)</th>
+                            <th>Disk Remaining (GB)</th>
                             <th>vSphere Tag</th>
                         </tr>
                     </thead>
@@ -362,28 +381,42 @@
                                 <td>
                                     {% if cluster.cpu_demand_percent %}
                                         <span class="metric-badge {% if cluster.cpu_demand_percent < 70 %}good{% elif cluster.cpu_demand_percent < 85 %}warning{% else %}critical{% endif %}">
-                                            {{ cluster.cpu_demand_percent }}%
+                                            {{ '%.1f'|format(cluster.cpu_demand_percent) }}%
                                         </span>
                                     {% else %}
                                         N/A
                                     {% endif %}
                                 </td>
-                                <td>{{ cluster.cpu_demand_highest_workload or 'N/A' }}%</td>
-                                <td>{{ cluster.cpu_worst_vm_ready or 'N/A' }}</td>
+                                <td>{{ '%.2f'|format(cluster.memory_usable_capacity or 0) }}</td>
+                                <td>{{ '%.2f'|format(cluster.memory_allocated_consumers or 0) }}</td>
                                 <td>
-                                    <div class="overcommit-indicator">
-                                        {{ cluster.cpu_overcommit_ratio or 'N/A' }}x
-                                        {% if cluster.cpu_overcommit_ratio and cluster.cpu_overcommit_ratio > 2 %}
-                                            <span style="color: #f56565;">⚠️</span>
-                                        {% endif %}
-                                    </div>
+                                    {% if cluster.memory_usable_capacity and cluster.memory_allocated_consumers %}
+                                        {% set mem_remaining = cluster.memory_usable_capacity - cluster.memory_allocated_consumers %}
+                                        <span class="metric-badge {% if mem_remaining > (cluster.memory_usable_capacity * 0.3) %}good{% elif mem_remaining > (cluster.memory_usable_capacity * 0.15) %}warning{% else %}critical{% endif %}">
+                                            {{ '%.2f'|format(mem_remaining) }}
+                                        </span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ '%.2f'|format(cluster.disk_total_capacity or 0) }}</td>
+                                <td>{{ '%.2f'|format(cluster.disk_total_provisioned or 0) }}</td>
+                                <td>
+                                    {% if cluster.disk_total_capacity and cluster.disk_total_provisioned %}
+                                        {% set disk_remaining = cluster.disk_total_capacity - cluster.disk_total_provisioned %}
+                                        <span class="metric-badge {% if disk_remaining > (cluster.disk_total_capacity * 0.3) %}good{% elif disk_remaining > (cluster.disk_total_capacity * 0.15) %}warning{% else %}critical{% endif %}">
+                                            {{ '%.2f'|format(disk_remaining) }}
+                                        </span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
                                 </td>
                                 <td>{{ cluster.vsphere_tag or 'N/A' }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 40px; color: #718096;">No staging cluster data available</td>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #718096;">No staging cluster data available</td>
                             </tr>
                         {% endif %}
                     </tbody>

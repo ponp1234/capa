@@ -162,6 +162,313 @@ class CapacityDataStage(db.Model):
 
 
 # ========================================
+# Add these models to your app.py (after existing models)
+# ========================================
+
+class LobInventory1(db.Model):
+    __tablename__ = 'lob_inventory1'
+    __table_args__ = {'schema': 'public'}
+    
+    id = db.Column(db.Integer, primary_key=True)
+    lob = db.Column(db.String)
+    ito_unit = db.Column(db.String)
+    itam_ciid = db.Column(db.String)
+    app_instance = db.Column(db.String)
+    tso = db.Column(db.String)
+    tso_status = db.Column(db.String)
+    compute_config = db.Column(db.Text)
+    canonic_alias = db.Column(db.String)
+    name = db.Column(db.String)
+    ip_address = db.Column(db.String)
+    infra = db.Column(db.String)
+    cidr = db.Column(db.String)
+    function = db.Column(db.String)
+    warn_orphan = db.Column(db.String)
+    decomm_after = db.Column(db.DateTime)
+    decomm_source = db.Column(db.String)
+    decomm_comment = db.Column(db.String)
+    vc_vm_poweredoff_at_or_before = db.Column(db.DateTime)
+    type = db.Column(db.String)
+    size = db.Column(db.String)
+    vcpu = db.Column(db.Integer)
+    memory_gb = db.Column(db.Integer)
+    warn_vm_size = db.Column(db.String)
+    product_mf = db.Column(db.String)
+    vm_image = db.Column(db.String)
+    error_vm_image = db.Column(db.String)
+    canonic_alias_fqdn = db.Column(db.String)
+    fqdn = db.Column(db.String)
+    infoblox_network_infra = db.Column(db.String)
+    config_canonic_id = db.Column(db.String)
+    serial_number = db.Column(db.String)
+    cmdb_ci_sat_signoff = db.Column(db.String)
+    cmdb_ci_env = db.Column(db.String)
+    cmdb_ci_op_status = db.Column(db.String)
+    warn_vm_shipped_folder = db.Column(db.String)
+    vc_vm_folder_full = db.Column(db.String)
+    vcf_domain = db.Column(db.String)
+    vc_cluster = db.Column(db.String)
+    vc_cluster_function = db.Column(db.String)
+    vc_vm_creation_ts = db.Column(db.DateTime)
+    mf_disks_total_gb = db.Column(db.Integer)
+    vc_vm_disks_total_gb = db.Column(db.Integer)
+    mf_disks = db.Column(db.String)
+    vc_vm_disks = db.Column(db.String)
+    vc_vm_size = db.Column(db.String)
+    vc_vm_vcpu = db.Column(db.Integer)
+    vc_vm_memory_gb = db.Column(db.Integer)
+    vc_vm_reservations = db.Column(db.String)
+    env = db.Column(db.String)
+    vip_host_name = db.Column(db.String)
+    vip_host_ref = db.Column(db.String)
+    vip_host_infra = db.Column(db.String)
+    lb_cname_name = db.Column(db.String)
+    lb_cname_ref = db.Column(db.String)
+    vc_vm_annotation = db.Column(db.Text)
+    guest_collect_ts = db.Column(db.DateTime)
+    guest_ip_address = db.Column(db.String)
+    guest_power_state = db.Column(db.String)
+    guest_id = db.Column(db.String)
+    guest_tools_running_status = db.Column(db.String)
+    guest_tools_status = db.Column(db.String)
+    vc_cluster_az = db.Column(db.String)
+    vc_vm_instance_uuid = db.Column(db.String)
+    vc_vm_id = db.Column(db.String)
+    cmdb_ci_sys_id = db.Column(db.String)
+    cmdb_ci_first_discovered = db.Column(db.DateTime)
+    cmdb_ci_last_discovered = db.Column(db.DateTime)
+    infoblox_ref = db.Column(db.String)
+    infoblox_network_ref = db.Column(db.String)
+    mac_address = db.Column(db.String)
+    host_record_name = db.Column(db.String)
+    error_image_os = db.Column(db.String)
+    import_timestamp = db.Column(db.DateTime)
+    state = db.Column(db.String)
+
+
+class LobInventoryStg(db.Model):
+    __tablename__ = 'lob_inventory1_stage'
+    __table_args__ = {'schema': 'public'}
+    
+    id = db.Column(db.Integer, primary_key=True)
+    lob = db.Column(db.String)
+    ito_unit = db.Column(db.String)
+    itam_ciid = db.Column(db.String)
+    app_instance = db.Column(db.String)
+    tso = db.Column(db.String)
+    tso_status = db.Column(db.String)
+    compute_config = db.Column(db.Text)
+    canonic_alias = db.Column(db.String)
+    name = db.Column(db.String)
+    ip_address = db.Column(db.String)
+    infra = db.Column(db.String)
+    cidr = db.Column(db.String)
+    function = db.Column(db.String)
+    warn_orphan = db.Column(db.String)
+    decomm_after = db.Column(db.DateTime)
+    decomm_source = db.Column(db.String)
+    decomm_comment = db.Column(db.String)
+    vc_vm_poweredoff_at_or_before = db.Column(db.DateTime)
+    type = db.Column(db.String)
+    size = db.Column(db.String)
+    vcpu = db.Column(db.Integer)
+    memory_gb = db.Column(db.Integer)
+    warn_vm_size = db.Column(db.String)
+    product_mf = db.Column(db.String)
+    vm_image = db.Column(db.String)
+    error_vm_image = db.Column(db.String)
+    canonic_alias_fqdn = db.Column(db.String)
+    fqdn = db.Column(db.String)
+    infoblox_network_infra = db.Column(db.String)
+    config_canonic_id = db.Column(db.String)
+    serial_number = db.Column(db.String)
+    cmdb_ci_sat_signoff = db.Column(db.String)
+    cmdb_ci_env = db.Column(db.String)
+    cmdb_ci_op_status = db.Column(db.String)
+    warn_vm_shipped_folder = db.Column(db.String)
+    vc_vm_folder_full = db.Column(db.String)
+    vcf_domain = db.Column(db.String)
+    vc_cluster = db.Column(db.String)
+    vc_cluster_function = db.Column(db.String)
+    vc_vm_creation_ts = db.Column(db.DateTime)
+    mf_disks_total_gb = db.Column(db.Integer)
+    vc_vm_disks_total_gb = db.Column(db.Integer)
+    mf_disks = db.Column(db.String)
+    vc_vm_disks = db.Column(db.String)
+    vc_vm_size = db.Column(db.String)
+    vc_vm_vcpu = db.Column(db.Integer)
+    vc_vm_memory_gb = db.Column(db.Integer)
+    vc_vm_reservations = db.Column(db.String)
+    env = db.Column(db.String)
+    vip_host_name = db.Column(db.String)
+    vip_host_ref = db.Column(db.String)
+    vip_host_infra = db.Column(db.String)
+    lb_cname_name = db.Column(db.String)
+    lb_cname_ref = db.Column(db.String)
+    vc_vm_annotation = db.Column(db.Text)
+    guest_collect_ts = db.Column(db.DateTime)
+    guest_ip_address = db.Column(db.String)
+    guest_power_state = db.Column(db.String)
+    guest_id = db.Column(db.String)
+    guest_tools_running_status = db.Column(db.String)
+    guest_tools_status = db.Column(db.String)
+    vc_cluster_az = db.Column(db.String)
+    vc_vm_instance_uuid = db.Column(db.String)
+    vc_vm_id = db.Column(db.String)
+    cmdb_ci_sys_id = db.Column(db.String)
+    cmdb_ci_first_discovered = db.Column(db.DateTime)
+    cmdb_ci_last_discovered = db.Column(db.DateTime)
+    infoblox_ref = db.Column(db.String)
+    infoblox_network_ref = db.Column(db.String)
+    mac_address = db.Column(db.String)
+    host_record_name = db.Column(db.String)
+    error_image_os = db.Column(db.String)
+    import_timestamp = db.Column(db.DateTime)
+    state = db.Column(db.String)
+
+
+# ========================================
+# UPDATED ROUTES - Replace existing routes
+# ========================================
+
+@app.route('/projects')
+def projects():
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
+    # Get unique LOBs from both prod and stage
+    prod_lobs = db.session.query(LobInventory1.lob).distinct().filter(LobInventory1.lob.isnot(None)).all()
+    stage_lobs = db.session.query(LobInventoryStg.lob).distinct().filter(LobInventoryStg.lob.isnot(None)).all()
+    
+    # Combine and create unique list of projects
+    all_lobs = set([lob[0] for lob in prod_lobs] + [lob[0] for lob in stage_lobs])
+    
+    # Create project list with environment counts
+    projects_list = []
+    for lob in sorted(all_lobs):
+        prod_count = LobInventory1.query.filter_by(lob=lob).count()
+        stage_count = LobInventoryStg.query.filter_by(lob=lob).count()
+        
+        # Get first record to get additional info
+        sample_prod = LobInventory1.query.filter_by(lob=lob).first()
+        sample_stage = LobInventoryStg.query.filter_by(lob=lob).first()
+        
+        sample = sample_prod or sample_stage
+        
+        projects_list.append({
+            'id': lob,  # Using LOB name as ID
+            'name': lob,
+            'description': f'Infrastructure for {lob}',
+            'owner': sample.tso if sample and sample.tso else 'Unknown',
+            'created_at': sample.import_timestamp if sample and sample.import_timestamp else datetime.utcnow(),
+            'has_prod': prod_count > 0,
+            'has_stage': stage_count > 0,
+            'prod_count': prod_count,
+            'stage_count': stage_count,
+            'total_count': prod_count + stage_count
+        })
+    
+    return render_template('projects_lob.html', projects=projects_list)
+
+
+@app.route('/project/<project_id>')
+def project_detail(project_id):
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
+    # Fetch servers from both prod and stage for this LOB
+    prod_servers = LobInventory1.query.filter_by(lob=project_id).all()
+    stage_servers = LobInventoryStg.query.filter_by(lob=project_id).all()
+    
+    # Prepare environment data
+    environments_data = []
+    
+    # Production Environment
+    if prod_servers:
+        env_dict = {
+            'id': 'prod',
+            'type': 'prod',
+            'region': 'Production',
+            'servers': []
+        }
+        
+        for server in prod_servers:
+            server_dict = {
+                'id': server.id,
+                'name': server.name or server.canonic_alias or 'Unknown',
+                'ip_address': server.ip_address or server.guest_ip_address,
+                'fqdn': server.fqdn or server.canonic_alias_fqdn,
+                'status': 'online' if server.guest_power_state == 'poweredOn' else 'offline',
+                'vcpu': server.vc_vm_vcpu or server.vcpu,
+                'memory_gb': server.vc_vm_memory_gb or server.memory_gb,
+                'disk_gb': server.vc_vm_disks_total_gb or server.mf_disks_total_gb,
+                'vm_size': server.vc_vm_size or server.size,
+                'cluster': server.vc_cluster,
+                'vcf_domain': server.vcf_domain,
+                'guest_os': server.guest_id,
+                'power_state': server.guest_power_state,
+                'tools_status': server.guest_tools_status,
+                'created': server.vc_vm_creation_ts,
+                'function': server.function,
+                'env': server.env or server.cmdb_ci_env,
+                'app_instance': server.app_instance,
+                'tso_status': server.tso_status
+            }
+            env_dict['servers'].append(server_dict)
+        
+        environments_data.append(env_dict)
+    
+    # Staging Environment
+    if stage_servers:
+        env_dict = {
+            'id': 'stage',
+            'type': 'stage',
+            'region': 'Staging',
+            'servers': []
+        }
+        
+        for server in stage_servers:
+            server_dict = {
+                'id': server.id,
+                'name': server.name or server.canonic_alias or 'Unknown',
+                'ip_address': server.ip_address or server.guest_ip_address,
+                'fqdn': server.fqdn or server.canonic_alias_fqdn,
+                'status': 'online' if server.guest_power_state == 'poweredOn' else 'offline',
+                'vcpu': server.vc_vm_vcpu or server.vcpu,
+                'memory_gb': server.vc_vm_memory_gb or server.memory_gb,
+                'disk_gb': server.vc_vm_disks_total_gb or server.mf_disks_total_gb,
+                'vm_size': server.vc_vm_size or server.size,
+                'cluster': server.vc_cluster,
+                'vcf_domain': server.vcf_domain,
+                'guest_os': server.guest_id,
+                'power_state': server.guest_power_state,
+                'tools_status': server.guest_tools_status,
+                'created': server.vc_vm_creation_ts,
+                'function': server.function,
+                'env': server.env or server.cmdb_ci_env,
+                'app_instance': server.app_instance,
+                'tso_status': server.tso_status
+            }
+            env_dict['servers'].append(server_dict)
+        
+        environments_data.append(env_dict)
+    
+    # Project info
+    sample = prod_servers[0] if prod_servers else stage_servers[0] if stage_servers else None
+    
+    project_info = {
+        'id': project_id,
+        'name': project_id,
+        'description': f'Infrastructure for {project_id}',
+        'owner': sample.tso if sample and sample.tso else 'Unknown',
+        'created_at': sample.import_timestamp if sample and sample.import_timestamp else datetime.utcnow()
+    }
+    
+    return render_template('project_detail_lob.html',
+                         project=project_info,
+                         environments=environments_data)
+
+# ========================================
 # Updated capacity route in app.py
 # ========================================
 
@@ -274,119 +581,7 @@ def dashboard():
                          avg_cpu=int(avg_cpu))
 
 
-@app.route('/projects')
-def projects():
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-    
-    # Fetch all projects with their environments
-    projects = Project.query.all()
-    
-    # Prepare data for JavaScript
-    projects_data = []
-    for project in projects:
-        project_dict = {
-            'id': project.id,
-            'name': project.name,
-            'owner': project.owner or 'Unknown',
-            'created_date': project.created_at.strftime('%b %d, %Y'),
-            'environments': []
-        }
-        
-        for env in project.environments:
-            env_dict = {
-                'id': env.id,
-                'environment_type': env.environment_type,
-                'region': env.region or 'Unknown',
-                'servers': []
-            }
-            
-            for server in env.servers:
-                server_dict = {
-                    'id': server.id,
-                    'name': server.name,
-                    'ip_address': server.ip_address,
-                    'os': server.os,
-                    'status': server.status,
-                    'cpu_cores': server.cpu_cores,
-                    'cpu_usage': server.cpu_usage,
-                    'ram': server.ram,
-                    'ram_usage': server.ram_usage,
-                    'storage': server.storage,
-                    'storage_used': server.storage_used,
-                    'uptime': server.uptime,
-                    'services': []
-                }
-                
-                for service in server.services:
-                    server_dict['services'].append({
-                        'name': service.name,
-                        'port': service.port,
-                        'status': service.status,
-                        'response_time': service.response_time
-                    })
-                
-                env_dict['servers'].append(server_dict)
-            
-            project_dict['environments'].append(env_dict)
-        
-        projects_data.append(project_dict)
-    
-    return render_template('projects.html', 
-                         projects=projects,
-                         projects_json=json.dumps(projects_data))
 
-@app.route('/project/<int:project_id>')
-def project_detail(project_id):
-    """View detailed information about a specific project"""
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-    
-    # Fetch the project with all related data
-    project = Project.query.get_or_404(project_id)
-    
-    # Prepare environment data
-    environments_data = []
-    for env in project.environments:
-        env_dict = {
-            'id': env.id,
-            'type': env.environment_type,
-            'region': env.region or 'Unknown',
-            'servers': []
-        }
-        
-        for server in env.servers:
-            server_dict = {
-                'id': server.id,
-                'name': server.name,
-                'ip_address': server.ip_address,
-                'os': server.os,
-                'status': server.status,
-                'cpu_cores': server.cpu_cores,
-                'cpu_usage': server.cpu_usage,
-                'ram': server.ram,
-                'ram_usage': server.ram_usage,
-                'storage': server.storage,
-                'storage_used': server.storage_used,
-                'uptime': server.uptime,
-                'services': []
-            }
-            
-            for service in server.services:
-                server_dict['services'].append({
-                    'name': service.name,
-                    'port': service.port,
-                    'status': service.status,
-                    'response_time': service.response_time
-                })
-            
-            env_dict['servers'].append(server_dict)
-        
-        environments_data.append(env_dict)
-    
-    return render_template('project_detail.html',
-                         project=project,
-                         environments=environments_data)
 
 @app.route('/alerts')
 def alerts():
