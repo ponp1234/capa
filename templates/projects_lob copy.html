@@ -1,4 +1,4 @@
-<!-- templates/projects_lob.html - Modified for LOB Inventory with View Toggle -->
+<!-- templates/projects_lob.html - Modified for LOB Inventory -->
 {% extends "base.html" %}
 
 {% block title %}Dotsh - Project Servers{% endblock %}
@@ -176,30 +176,6 @@
         margin-bottom: 8px;
         color: #2d3748;
     }
-    .page-header-actions {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 24px;
-    }
-    .action-btn {
-        padding: 10px 20px;
-        background: white;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        color: #4a5568;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-    .action-btn:hover {
-        border-color: #667eea;
-        color: #667eea;
-    }
-    .action-btn.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-color: transparent;
-    }
 </style>
 
 <div class="dashboard">
@@ -259,16 +235,6 @@
         <div class="header">
             <h1>Project Servers</h1>
             <p>Manage and monitor all your project environments</p>
-        </div>
-
-        <!-- View Toggle -->
-        <div class="page-header-actions">
-            <a href="{{ url_for('projects') }}" class="action-btn active">
-                View by LOB
-            </a>
-            <a href="{{ url_for('projects_itam_ciid') }}" class="action-btn">
-                View by ITAM CIID
-            </a>
         </div>
 
         <!-- Search Box -->

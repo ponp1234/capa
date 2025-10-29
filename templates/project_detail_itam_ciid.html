@@ -1,0 +1,865 @@
+<!-- templates/project_detail_itam_ciid.html - ITAM CIID Project Details -->
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} - ITAM CIID Details{% endblock %}
+
+{% block content %}
+<style>
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        color: #4a5568;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        margin-bottom: 24px;
+    }
+    .back-button:hover {
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateX(-4px);
+    }
+    .project-header-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .project-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+    .project-subtitle {
+        font-size: 16px;
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    .project-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+    }
+    .meta-item {
+        padding: 12px;
+        background: #f7fafc;
+        border-radius: 6px;
+    }
+    .meta-label {
+        font-size: 12px;
+        color: #718096;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .meta-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    .environment-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .environment-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .environment-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 22px;
+        font-weight: bold;
+        color: #2d3748;
+    }
+    .env-type-badge {
+        padding: 6px 16px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .env-type-badge.prod {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    .env-type-badge.stage {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    .server-count {
+        font-size: 14px;
+        color: #718096;
+    }
+    .servers-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+    }
+    .servers-table thead {
+        background: #f7fafc;
+    }
+    .servers-table th {
+        padding: 12px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #4a5568;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .servers-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 14px;
+        color: #2d3748;
+    }
+    .servers-table tbody tr {
+        transition: background 0.2s;
+    }
+    .servers-table tbody tr:hover {
+        background: #f7fafc;
+    }
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-badge.online {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    .status-badge.offline {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    .server-name {
+        font-weight: 600;
+        color: #667eea;
+    }
+    .server-details-btn {
+        padding: 6px 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .server-details-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .empty-servers {
+        text-align: center;
+        padding: 40px;
+        color: #718096;
+    }
+    .empty-servers svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+        opacity: 0.3;
+    }
+    .filter-bar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 16px;
+        background: #f7fafc;
+        border-radius: 8px;
+    }
+    .filter-input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 14px;
+        outline: none;
+    }
+    .filter-input:focus {
+        border-color: #667eea;
+    }
+    .filter-select {
+        padding: 10px 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 14px;
+        outline: none;
+        background: white;
+        cursor: pointer;
+    }
+    .filter-select:focus {
+        border-color: #667eea;
+    }
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        color: white;
+    }
+    .stat-card-label {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-bottom: 4px;
+    }
+    .stat-card-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .modal-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #2d3748;
+    }
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #718096;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    .close-modal:hover {
+        background: #f7fafc;
+        color: #2d3748;
+    }
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        padding: 24px;
+    }
+    .detail-item {
+        padding: 12px;
+        background: #f7fafc;
+        border-radius: 6px;
+    }
+    .detail-label {
+        font-size: 12px;
+        color: #718096;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .detail-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    .dependencies-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .dependencies-header {
+        font-size: 20px;
+        font-weight: bold;
+        color: #2d3748;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .dependencies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 20px;
+    }
+    .dependency-group {
+        padding: 16px;
+        background: #f7fafc;
+        border-radius: 8px;
+    }
+    .dependency-group-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .dependency-icon {
+        width: 20px;
+        height: 20px;
+    }
+    .dependency-icon.upstream {
+        color: #3b82f6;
+    }
+    .dependency-icon.downstream {
+        color: #10b981;
+    }
+    .dependency-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .dependency-item {
+        padding: 12px;
+        background: white;
+        border-radius: 6px;
+        border-left: 3px solid #e2e8f0;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .dependency-item:hover {
+        border-left-color: #667eea;
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .dependency-item.upstream {
+        border-left-color: #3b82f6;
+    }
+    .dependency-item.downstream {
+        border-left-color: #10b981;
+    }
+    .dependency-ciid {
+        font-size: 14px;
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 4px;
+    }
+    .dependency-lob {
+        font-size: 13px;
+        color: #4a5568;
+        margin-bottom: 4px;
+    }
+    .dependency-type {
+        font-size: 11px;
+        color: #718096;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .no-dependencies {
+        text-align: center;
+        padding: 20px;
+        color: #718096;
+        font-size: 14px;
+    }
+    .dependency-count {
+        background: #667eea;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="dashboard">
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo" onclick="location.href='{{ url_for('dashboard') }}'">
+            dotsh<span class="logo-dot">.</span>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/>
+                </svg>
+                <span class="tooltip">Overview</span>
+            </a>
+
+            <a href="{{ url_for('capacity') }}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="3" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="10" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="17" width="20" height="5" rx="1" stroke-width="2"/>
+                </svg>
+                <span class="tooltip">Server Capacity</span>
+            </a>
+
+            <a href="{{ url_for('projects') }}" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke-width="2"/>
+                </svg>
+                <span class="tooltip">Project Servers</span>
+            </a>
+
+            <a href="{{ url_for('alerts') }}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2"/>
+                </svg>
+                <span class="tooltip">Alerts</span>
+            </a>
+
+            <a href="{{ url_for('logout') }}" class="nav-item nav-logout" onclick="return confirm('Are you sure you want to logout?')">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke-width="2"/>
+                    <polyline points="16 17 21 12 16 7" stroke-width="2"/>
+                    <line x1="21" y1="12" x2="9" y2="12" stroke-width="2"/>
+                </svg>
+                <span class="tooltip">Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <a href="{{ url_for('projects_itam_ciid') }}" class="back-button">
+            <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none">
+                <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Back to ITAM CIID Projects
+        </a>
+
+        <!-- Project Header -->
+        <div class="project-header-section">
+            <div class="project-subtitle">ITAM CIID: {{ project.itam_ciid }}</div>
+            <div class="project-title">{{ project.lob }}</div>
+            <p style="color: #718096; margin-top: 8px;">{{ project.description }}</p>
+            
+            <div class="project-meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">ITAM CIID</div>
+                    <div class="meta-value">{{ project.itam_ciid }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">LOB</div>
+                    <div class="meta-value">{{ project.lob }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Owner (TSO)</div>
+                    <div class="meta-value">{{ project.owner }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">ITO Unit</div>
+                    <div class="meta-value">{{ project.ito_unit or 'N/A' }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Total Servers</div>
+                    <div class="meta-value">{{ project.total_servers }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Created</div>
+                    <div class="meta-value">{{ project.created_at.strftime('%b %d, %Y') if project.created_at else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dependencies Section -->
+        <div class="dependencies-section">
+            <div class="dependencies-header">
+                <svg style="width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none">
+                    <path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Application Dependencies
+            </div>
+            
+            <div class="dependencies-grid">
+                <!-- Upstream Dependencies -->
+                <div class="dependency-group">
+                    <div class="dependency-group-title">
+                        <svg class="dependency-icon upstream" viewBox="0 0 24 24" fill="none">
+                            <path d="M19 12H5m0 0l7 7m-7-7l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Upstream Dependencies
+                        {% if project.upstream_dependencies %}
+                        <span class="dependency-count">{{ project.upstream_dependencies|length }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if project.upstream_dependencies %}
+                    <div class="dependency-list">
+                        {% for dep in project.upstream_dependencies %}
+                        <a href="{{ url_for('project_detail_itam_ciid', project_id=dep.ciid) }}" class="dependency-item upstream">
+                            <div class="dependency-ciid">ITAM CIID: {{ dep.ciid }}</div>
+                            <div class="dependency-lob">{{ dep.lob }}</div>
+                            <span class="dependency-type">{{ dep.connection_type }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-dependencies">
+                        No upstream dependencies found
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Downstream Dependencies -->
+                <div class="dependency-group">
+                    <div class="dependency-group-title">
+                        <svg class="dependency-icon downstream" viewBox="0 0 24 24" fill="none">
+                            <path d="M5 12h14m0 0l-7-7m7 7l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Downstream Dependencies
+                        {% if project.downstream_dependencies %}
+                        <span class="dependency-count">{{ project.downstream_dependencies|length }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if project.downstream_dependencies %}
+                    <div class="dependency-list">
+                        {% for dep in project.downstream_dependencies %}
+                        <a href="{{ url_for('project_detail_itam_ciid', project_id=dep.ciid) }}" class="dependency-item downstream">
+                            <div class="dependency-ciid">ITAM CIID: {{ dep.ciid }}</div>
+                            <div class="dependency-lob">{{ dep.lob }}</div>
+                            <span class="dependency-type">{{ dep.connection_type }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-dependencies">
+                        No downstream dependencies found
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" class="filter-input" id="filterInput" placeholder="Search servers by name, IP, or FQDN..." oninput="filterServers()">
+            <select class="filter-select" id="statusFilter" onchange="filterServers()">
+                <option value="">All Status</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+            </select>
+            <select class="filter-select" id="envFilter" onchange="filterServers()">
+                <option value="">All Environments</option>
+                <option value="prod">Production</option>
+                <option value="stage">Staging</option>
+            </select>
+        </div>
+
+        <!-- Environment Sections -->
+        {% for environment in environments %}
+        <div class="environment-section" data-env-id="{{ environment.id }}">
+            <div class="environment-header">
+                <div class="environment-title">
+                    <span>{{ environment.region }}</span>
+                    <span class="env-type-badge {{ environment.type }}">
+                        {{ environment.type|upper }}
+                    </span>
+                </div>
+                <div class="server-count">
+                    {{ environment.servers|length }} Server{{ 's' if environment.servers|length != 1 else '' }}
+                </div>
+            </div>
+            
+            {% if environment.servers %}
+            <table class="servers-table">
+                <thead>
+                    <tr>
+                        <th>Server Name</th>
+                        <th>IP Address</th>
+                        <th>FQDN</th>
+                        <th>Status</th>
+                        <th>vCPU</th>
+                        <th>Memory</th>
+                        <th>Disk</th>
+                        <th>Cluster</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for server in environment.servers %}
+                    <tr class="server-row" 
+                        data-name="{{ server.name|lower }}" 
+                        data-ip="{{ server.ip_address|lower if server.ip_address else '' }}"
+                        data-fqdn="{{ server.fqdn|lower if server.fqdn else '' }}"
+                        data-status="{{ server.status }}">
+                        <td>
+                            <div class="server-name">{{ server.name }}</div>
+                            <div style="font-size: 11px; color: #718096;">{{ server.function or 'N/A' }}</div>
+                        </td>
+                        <td>{{ server.ip_address or 'N/A' }}</td>
+                        <td style="font-size: 12px;">{{ server.fqdn or 'N/A' }}</td>
+                        <td>
+                            <span class="status-badge {{ server.status }}">
+                                {{ server.status }}
+                            </span>
+                        </td>
+                        <td>{{ server.vcpu or 'N/A' }}</td>
+                        <td>{{ server.memory_gb or 'N/A' }} GB</td>
+                        <td>{{ server.disk_gb or 'N/A' }} GB</td>
+                        <td style="font-size: 12px;">{{ server.cluster or 'N/A' }}</td>
+                        <td>
+                            <button class="server-details-btn" onclick="showServerDetails({{ server.id }}, '{{ environment.id }}', {{ loop.index0 }})">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-servers">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="2" y="3" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="10" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="17" width="20" height="5" rx="1" stroke-width="2"/>
+                </svg>
+                <p>No servers found in this environment</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if not environments %}
+        <div class="environment-section">
+            <div class="empty-servers">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="2" y="3" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="10" width="20" height="5" rx="1" stroke-width="2"/>
+                    <rect x="2" y="17" width="20" height="5" rx="1" stroke-width="2"/>
+                </svg>
+                <h3>No Environments Found</h3>
+                <p>This ITAM CIID doesn't have any environments configured yet.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Server Details Modal -->
+<div id="serverModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">Server Details</div>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+// Store server data for modal
+const serverData = {{ environments|tojson|safe }};
+
+function showServerDetails(serverId, envId, serverIndex) {
+    const env = serverData.find(e => e.id === envId);
+    if (!env) return;
+    
+    const server = env.servers[serverIndex];
+    if (!server) return;
+    
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = server.name + ' - Details';
+    
+    modalBody.innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Server Name</div>
+                <div class="detail-value">${server.name || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">IP Address</div>
+                <div class="detail-value">${server.ip_address || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">FQDN</div>
+                <div class="detail-value">${server.fqdn || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Status</div>
+                <div class="detail-value">
+                    <span class="status-badge ${server.status}">${server.status}</span>
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Power State</div>
+                <div class="detail-value">${server.power_state || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Guest OS</div>
+                <div class="detail-value">${server.guest_os || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">vCPU</div>
+                <div class="detail-value">${server.vcpu || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Memory</div>
+                <div class="detail-value">${server.memory_gb || 'N/A'} GB</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Disk</div>
+                <div class="detail-value">${server.disk_gb || 'N/A'} GB</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">VM Size</div>
+                <div class="detail-value">${server.vm_size || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Cluster</div>
+                <div class="detail-value">${server.cluster || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">VCF Domain</div>
+                <div class="detail-value">${server.vcf_domain || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Function</div>
+                <div class="detail-value">${server.function || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Environment</div>
+                <div class="detail-value">${server.env || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">App Instance</div>
+                <div class="detail-value">${server.app_instance || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">TSO Status</div>
+                <div class="detail-value">${server.tso_status || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">VMware Tools</div>
+                <div class="detail-value">${server.tools_status || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">LOB</div>
+                <div class="detail-value">${server.lob || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">ITO Unit</div>
+                <div class="detail-value">${server.ito_unit || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">TSO</div>
+                <div class="detail-value">${server.tso || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Created</div>
+                <div class="detail-value">${server.created ? new Date(server.created).toLocaleDateString() : 'N/A'}</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('serverModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('serverModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('serverModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+function filterServers() {
+    const filterInput = document.getElementById('filterInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const envFilter = document.getElementById('envFilter').value;
+    
+    // Filter environment sections
+    const envSections = document.querySelectorAll('.environment-section');
+    envSections.forEach(section => {
+        const envId = section.getAttribute('data-env-id');
+        
+        // Check if environment matches filter
+        if (envFilter && envId !== envFilter) {
+            section.style.display = 'none';
+            return;
+        } else {
+            section.style.display = 'block';
+        }
+        
+        // Filter server rows within this environment
+        const rows = section.querySelectorAll('.server-row');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name') || '';
+            const ip = row.getAttribute('data-ip') || '';
+            const fqdn = row.getAttribute('data-fqdn') || '';
+            const status = row.getAttribute('data-status') || '';
+            
+            const matchesText = name.includes(filterInput) || 
+                              ip.includes(filterInput) || 
+                              fqdn.includes(filterInput);
+            const matchesStatus = !statusFilter || status === statusFilter;
+            
+            if (matchesText && matchesStatus) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Show/hide environment section based on visible servers
+        if (visibleCount === 0 && (filterInput || statusFilter)) {
+            section.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}
