@@ -20,16 +20,13 @@ CREATE INDEX IF NOT EXISTS idx_app_dependency_downstream_ciid ON app_dependency(
 
 /*
 INSERT INTO app_dependency (source_ciid, upstream_ciid, down_stream_ciid, connection_type) VALUES
-('34512', '34513', NULL, 'API'),
+('12345', '12340', NULL, 'API'),
 ('12345', '12341', NULL, 'Database'),
 ('12345', '12342', NULL, 'Message Queue'),
 ('12346', '12345', NULL, 'REST API'),
 ('12347', '12345', NULL, 'WebSocket'),
 ('12345', NULL, '12348', 'Event Stream');
 */
-
-INSERT INTO app_dependency (source_ciid, upstream_ciid, down_stream_ciid, connection_type) VALUES
-('CIID-34512', 'CIID-34513', NULL, 'API')
 
 -- Verify the table was created
 SELECT table_name, column_name, data_type 
