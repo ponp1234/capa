@@ -147,6 +147,30 @@
         text-transform: uppercase;
         display: inline-block;
     }
+    .type-badge {
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        display: inline-block;
+        letter-spacing: 0.5px;
+    }
+    .type-parent {
+        background: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #86efac;
+    }
+    .type-child {
+        background: #dbeafe;
+        color: #2563eb;
+        border: 1px solid #93c5fd;
+    }
+    .type-standalone {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fcd34d;
+    }
     .lob-text {
         font-size: 12px;
         color: #718096;
@@ -358,6 +382,19 @@
                         <input type="text" class="filter-input" id="filterUpstreamCIID" placeholder="Enter upstream ITAM CIID..." onkeyup="filterTable()">
                     </div>
                     <div class="filter-group">
+                        <label class="filter-label">Search Downstream CIID</label>
+                        <input type="text" class="filter-input" id="filterDownstreamCIID" placeholder="Enter downstream ITAM CIID..." onkeyup="filterTable()">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Type</label>
+                        <select class="filter-select" id="filterType" onchange="filterTable()">
+                            <option value="">All Types</option>
+                            <option value="parent">Parent</option>
+                            <option value="child">Child</option>
+                            <option value="standalone">Standalone</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
                         <label class="filter-label">Connection Type</label>
                         <select class="filter-select" id="filterConnectionType" onchange="filterTable()">
                             <option value="">All Types</option>
@@ -367,10 +404,14 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Search LOB</label>
-                        <input type="text" class="filter-input" id="filterLOB" placeholder="Enter LOB name..." onkeyup="filterTable()">
-                    </div>
+                </div>
+                <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+                    <button class="graph-btn" onclick="downloadCSV()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <svg style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Download as CSV
+                    </button>
                 </div>
             </div>
 
@@ -381,49 +422,65 @@
                     <thead>
                         <tr>
                             <th>Source ITAM CIID</th>
-                            <th>Source LOB</th>
+                            <th>Type</th>
                             <th></th>
                             <th>Upstream ITAM CIID</th>
-                            <th>Upstream LOB</th>
+                            <th></th>
+                            <th>Downstream ITAM CIID</th>
                             <th>Connection Type</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="dependenciesTableBody">
                         {% for dep in dependencies %}
+                        {% set is_parent = (not dep.upstream_ciid or dep.upstream_ciid == 'N/A') and (dep.downstream_ciid and dep.downstream_ciid != 'N/A') %}
+                        {% set is_child = dep.upstream_ciid and dep.upstream_ciid != 'N/A' %}
+                        {% set dep_type = 'Parent' if is_parent else ('Child' if is_child else 'Standalone') %}
                         <tr class="dependency-row" 
                             data-source="{{ dep.source_ciid|lower }}" 
                             data-upstream="{{ dep.upstream_ciid|lower if dep.upstream_ciid else '' }}"
+                            data-downstream="{{ dep.downstream_ciid|lower if dep.downstream_ciid else '' }}"
                             data-connection="{{ dep.connection_type|lower }}"
-                            data-lob="{{ (dep.source_lob + ' ' + dep.upstream_lob)|lower }}">
+                            data-type="{{ dep_type|lower }}">
                             <td>
                                 <a href="{{ url_for('project_detail_itam_ciid', project_id=dep.source_ciid) }}" class="ciid-link">
                                     {{ dep.source_ciid }}
                                 </a>
-                                <div class="lob-text">{{ dep.source_lob }}</div>
                             </td>
-                            <td>{{ dep.source_lob }}</td>
+                            <td>
+                                {% if dep_type == 'Parent' %}
+                                <span class="type-badge type-parent">Parent</span>
+                                {% elif dep_type == 'Child' %}
+                                <span class="type-badge type-child">Child</span>
+                                {% else %}
+                                <span class="type-badge type-standalone">Standalone</span>
+                                {% endif %}
+                            </td>
                             <td style="text-align: center;">
-                                <span class="arrow-icon">→</span>
+                                <span class="arrow-icon" style="color: #3b82f6;">←</span>
                             </td>
                             <td>
                                 {% if dep.upstream_ciid %}
                                 <a href="{{ url_for('project_detail_itam_ciid', project_id=dep.upstream_ciid) }}" class="ciid-link">
                                     {{ dep.upstream_ciid }}
                                 </a>
-                                <div class="lob-text">{{ dep.upstream_lob }}</div>
                                 {% else %}
                                 <span style="color: #cbd5e0;">N/A</span>
                                 {% endif %}
                             </td>
-                            <td>{{ dep.upstream_lob if dep.upstream_ciid else 'N/A' }}</td>
-                            <td>
-                                <span class="connection-badge">{{ dep.connection_type }}</span>
+                            <td style="text-align: center;">
+                                <span class="arrow-icon" style="color: #10b981;">→</span>
                             </td>
                             <td>
-                                <button class="graph-btn" onclick="highlightInGraph('{{ dep.source_ciid }}', '{{ dep.upstream_ciid }}')">
-                                    View in Graph
-                                </button>
+                                {% if dep.downstream_ciid %}
+                                <a href="{{ url_for('project_detail_itam_ciid', project_id=dep.downstream_ciid) }}" class="ciid-link">
+                                    {{ dep.downstream_ciid }}
+                                </a>
+                                {% else %}
+                                <span style="color: #cbd5e0;">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="connection-badge">{{ dep.connection_type }}</span>
                             </td>
                         </tr>
                         {% endfor %}
@@ -443,6 +500,34 @@
 
         <!-- Graph View -->
         <div id="graph-view" class="view-content">
+            <!-- Graph Search Bar -->
+            <div class="search-filter-bar" style="margin-bottom: 20px;">
+                <div style="display: flex; gap: 12px; align-items: flex-end;">
+                    <div class="filter-group" style="flex: 1;">
+                        <label class="filter-label">Search Source CIID for Graph</label>
+                        <input type="text" class="filter-input" id="graphSearchCIID" placeholder="Enter ITAM CIID to visualize its dependencies...">
+                    </div>
+                    <button class="graph-btn" onclick="searchAndFilterGraph()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; height: 42px;">
+                        <svg style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;" viewBox="0 0 24 24" fill="none">
+                            <circle cx="11" cy="11" r="8" stroke="white" stroke-width="2"/>
+                            <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Show Graph
+                    </button>
+                    <button class="graph-btn" onclick="clearGraphSearch()" style="height: 42px;">
+                        Clear
+                    </button>
+                </div>
+                <div id="graphSearchInfo" style="margin-top: 12px; padding: 12px; background: #eef2ff; border-radius: 6px; display: none;">
+                    <div style="display: flex; align-items: center; gap: 8px; color: #667eea; font-size: 14px; font-weight: 600;">
+                        <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none">
+                            <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span id="graphSearchInfoText"></span>
+                    </div>
+                </div>
+            </div>
+            
             <div id="graph-container">
                 <div class="graph-controls">
                     <button class="graph-btn" onclick="resetGraph()">Reset View</button>
@@ -483,31 +568,51 @@ function switchView(view) {
     document.getElementById(view + '-view').classList.add('active');
     
     if (view === 'graph') {
-        initGraph();
+        if (currentFilter) {
+            // If there's a filter, apply it
+            setTimeout(() => searchAndFilterGraph(), 100);
+        } else {
+            initGraph();
+        }
     }
 }
+
+// Add keyboard support for graph search
+document.addEventListener('DOMContentLoaded', function() {
+    const graphSearchInput = document.getElementById('graphSearchCIID');
+    if (graphSearchInput) {
+        graphSearchInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                searchAndFilterGraph();
+            }
+        });
+    }
+});
 
 // Table filtering
 function filterTable() {
     const sourceCIID = document.getElementById('filterSourceCIID').value.toLowerCase();
     const upstreamCIID = document.getElementById('filterUpstreamCIID').value.toLowerCase();
+    const downstreamCIID = document.getElementById('filterDownstreamCIID').value.toLowerCase();
+    const type = document.getElementById('filterType').value.toLowerCase();
     const connectionType = document.getElementById('filterConnectionType').value.toLowerCase();
-    const lob = document.getElementById('filterLOB').value.toLowerCase();
     
     const rows = document.querySelectorAll('.dependency-row');
     
     rows.forEach(row => {
         const rowSource = row.getAttribute('data-source') || '';
         const rowUpstream = row.getAttribute('data-upstream') || '';
+        const rowDownstream = row.getAttribute('data-downstream') || '';
+        const rowType = row.getAttribute('data-type') || '';
         const rowConnection = row.getAttribute('data-connection') || '';
-        const rowLOB = row.getAttribute('data-lob') || '';
         
         const matchesSource = !sourceCIID || rowSource.includes(sourceCIID);
         const matchesUpstream = !upstreamCIID || rowUpstream.includes(upstreamCIID);
+        const matchesDownstream = !downstreamCIID || rowDownstream.includes(downstreamCIID);
+        const matchesType = !type || rowType === type;
         const matchesConnection = !connectionType || rowConnection === connectionType;
-        const matchesLOB = !lob || rowLOB.includes(lob);
         
-        if (matchesSource && matchesUpstream && matchesConnection && matchesLOB) {
+        if (matchesSource && matchesUpstream && matchesDownstream && matchesType && matchesConnection) {
             row.style.display = '';
         } else {
             row.style.display = 'none';
@@ -515,14 +620,57 @@ function filterTable() {
     });
 }
 
+// CSV Download function
+function downloadCSV() {
+    // Get all visible rows
+    const rows = document.querySelectorAll('.dependency-row');
+    let csvContent = 'Source ITAM CIID,Type,Upstream ITAM CIID,Downstream ITAM CIID,Connection Type\n';
+    
+    rows.forEach(row => {
+        if (row.style.display !== 'none') {
+            const cells = row.querySelectorAll('td');
+            const source = cells[0].textContent.trim();
+            const type = cells[1].textContent.trim();
+            const upstream = cells[3].textContent.trim();
+            const downstream = cells[5].textContent.trim();
+            const connectionType = cells[6].textContent.trim();
+            
+            csvContent += `"${source}","${type}","${upstream}","${downstream}","${connectionType}"\n`;
+        }
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'dependencies_export_' + new Date().toISOString().split('T')[0] + '.csv');
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // D3.js Graph Visualization
 let simulation, svg, link, node, text;
+let currentFilter = null; // Store current filter
 const graphData = {
     nodes: {{ nodes|tojson|safe }},
     links: {{ links|tojson|safe }}
 };
 
-function initGraph() {
+// Create a copy of original data for filtering
+const originalGraphData = {
+    nodes: JSON.parse(JSON.stringify(graphData.nodes)),
+    links: JSON.parse(JSON.stringify(graphData.links))
+};
+
+function initGraph(filteredData = null) {
+    // Use filtered data if provided, otherwise use full dataset
+    const dataToRender = filteredData || graphData;
+    
     // Clear existing graph
     d3.select('#dependency-graph').selectAll('*').remove();
     
@@ -550,8 +698,8 @@ function initGraph() {
         .attr('fill', '#667eea');
     
     // Create force simulation
-    simulation = d3.forceSimulation(graphData.nodes)
-        .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(150))
+    simulation = d3.forceSimulation(dataToRender.nodes)
+        .force('link', d3.forceLink(dataToRender.links).id(d => d.id).distance(150))
         .force('charge', d3.forceManyBody().strength(-400))
         .force('center', d3.forceCenter(width / 2, height / 2))
         .force('collision', d3.forceCollide().radius(30));
@@ -559,7 +707,7 @@ function initGraph() {
     // Create links
     link = svg.append('g')
         .selectAll('line')
-        .data(graphData.links)
+        .data(dataToRender.links)
         .enter().append('line')
         .attr('stroke', '#667eea')
         .attr('stroke-width', 2)
@@ -569,7 +717,7 @@ function initGraph() {
     // Create nodes
     node = svg.append('g')
         .selectAll('circle')
-        .data(graphData.nodes)
+        .data(dataToRender.nodes)
         .enter().append('circle')
         .attr('r', d => d.size || 10)
         .attr('fill', d => d3.schemeCategory10[d.group % 10])
@@ -583,7 +731,7 @@ function initGraph() {
     // Create labels
     text = svg.append('g')
         .selectAll('text')
-        .data(graphData.nodes)
+        .data(dataToRender.nodes)
         .enter().append('text')
         .attr('text-anchor', 'middle')
         .attr('dy', -15)
@@ -608,6 +756,97 @@ function initGraph() {
             .attr('x', d => d.x)
             .attr('y', d => d.y);
     });
+}
+
+// Search and filter graph by source CIID
+function searchAndFilterGraph() {
+    const searchCIID = document.getElementById('graphSearchCIID').value.trim();
+    
+    if (!searchCIID) {
+        alert('Please enter a Source CIID to search');
+        return;
+    }
+    
+    // Find the source node
+    const sourceNode = originalGraphData.nodes.find(n => n.id.toLowerCase() === searchCIID.toLowerCase());
+    
+    if (!sourceNode) {
+        alert(`ITAM CIID "${searchCIID}" not found in dependencies`);
+        return;
+    }
+    
+    // Store current filter
+    currentFilter = searchCIID;
+    
+    // Get all related nodes (upstream and downstream)
+    const relatedNodeIds = new Set([searchCIID]);
+    
+    // Find all upstream dependencies (what this CIID depends on)
+    originalGraphData.links.forEach(link => {
+        if (link.source === searchCIID || (typeof link.source === 'object' && link.source.id === searchCIID)) {
+            const targetId = typeof link.target === 'string' ? link.target : link.target.id;
+            relatedNodeIds.add(targetId);
+        }
+    });
+    
+    // Find all downstream dependencies (what depends on this CIID)
+    originalGraphData.links.forEach(link => {
+        const sourceId = typeof link.source === 'string' ? link.source : link.source.id;
+        const targetId = typeof link.target === 'string' ? link.target : link.target.id;
+        
+        if (targetId === searchCIID) {
+            relatedNodeIds.add(sourceId);
+        }
+    });
+    
+    // Filter nodes
+    const filteredNodes = originalGraphData.nodes.filter(n => relatedNodeIds.has(n.id));
+    
+    // Filter links - only links between filtered nodes
+    const filteredLinks = originalGraphData.links.filter(link => {
+        const sourceId = typeof link.source === 'string' ? link.source : link.source.id;
+        const targetId = typeof link.target === 'string' ? link.target : link.target.id;
+        return relatedNodeIds.has(sourceId) && relatedNodeIds.has(targetId);
+    });
+    
+    // Create filtered dataset
+    const filteredData = {
+        nodes: JSON.parse(JSON.stringify(filteredNodes)),
+        links: JSON.parse(JSON.stringify(filteredLinks))
+    };
+    
+    // Highlight the source node
+    filteredData.nodes = filteredData.nodes.map(n => {
+        if (n.id === searchCIID) {
+            return { ...n, isSource: true };
+        }
+        return n;
+    });
+    
+    // Show info message
+    const infoDiv = document.getElementById('graphSearchInfo');
+    const infoText = document.getElementById('graphSearchInfoText');
+    infoText.textContent = `Showing dependencies for ${searchCIID}: ${filteredNodes.length} applications, ${filteredLinks.length} connections`;
+    infoDiv.style.display = 'block';
+    
+    // Render filtered graph
+    initGraph(filteredData);
+    
+    // Highlight the source node with different styling
+    setTimeout(() => {
+        d3.selectAll('circle')
+            .attr('stroke', d => d.isSource ? '#f59e0b' : '#fff')
+            .attr('stroke-width', d => d.isSource ? 4 : 2)
+            .attr('r', d => d.isSource ? (d.size || 10) * 1.5 : (d.size || 10));
+    }, 100);
+}
+
+// Clear graph search and show full graph
+function clearGraphSearch() {
+    currentFilter = null;
+    document.getElementById('graphSearchCIID').value = '';
+    document.getElementById('graphSearchInfo').style.display = 'none';
+    initGraph(); // Render full graph
 }
 
 // Drag behavior
@@ -665,15 +904,27 @@ function resetGraph() {
 }
 
 function fitGraph() {
-    initGraph();
+    if (currentFilter) {
+        // If there's a filter, re-apply it
+        searchAndFilterGraph();
+    } else {
+        // Otherwise, show full graph
+        initGraph();
+    }
 }
 
 function highlightInGraph(source, target) {
-    switchView('graph');
+    // Switch to graph view
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+    document.querySelectorAll('.view-content').forEach(content => content.classList.remove('active'));
+    document.getElementById('graph-view').classList.add('active');
+    
+    // Set the search value and filter
+    document.getElementById('graphSearchCIID').value = source;
+    
     setTimeout(() => {
-        // Highlight specific nodes
-        node.attr('opacity', d => (d.id === source || d.id === target) ? 1 : 0.3);
-        link.attr('opacity', d => (d.source.id === source && d.target.id === target) ? 1 : 0.1);
+        searchAndFilterGraph();
     }, 500);
 }
 </script>
