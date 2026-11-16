@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIA Copilot Timeline</title>
+<style>
+  :root { --blue:#0473EA; --green:#38D200; --navy:#0A1F44; --ink:#1F2937; --muted:#5B6B7F; --line:#D6DEE8; --light:#F2F6FB; --lgreen:#EEFBE6; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:40px 24px; background:#fff; color:var(--ink); font-family:Inter, "Segoe UI", Arial, sans-serif; font-size:15px; line-height:1.5; }
+  .wrap { max-width:1180px; margin:0 auto; }
+  .kicker { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--blue); }
+  h1 { margin:6px 0 6px; font-size:30px; color:var(--navy); }
+  .lead { color:var(--muted); margin:0 0 24px; max-width:900px; }
+  .bar { height:6px; background:linear-gradient(90deg,var(--blue) 0 72%,var(--green) 72% 100%); border-radius:3px; margin-bottom:28px; }
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:820px; }
+  th { background:var(--navy); color:#fff; text-align:left; font-size:13px; font-weight:600; padding:12px 14px; }
+  td { padding:14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:nth-child(even) td { background:var(--light); }
+  .phase { font-weight:700; color:var(--navy); white-space:nowrap; }
+  .when { font-weight:600; color:var(--blue); white-space:nowrap; }
+  .gate { font-size:14px; }
+  .chip { display:inline-block; font-size:12px; font-weight:600; padding:2px 8px; border-radius:5px; background:#E8F2FE; color:var(--navy); border:1px solid var(--line); margin:2px 4px 2px 0; }
+  tr.key td { background:var(--lgreen) !important; }
+  .notes { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-top:28px; }
+  .card { border:1px solid var(--line); border-top:4px solid var(--blue); border-radius:10px; padding:16px 18px; }
+  .card.g { border-top-color:var(--green); }
+  .card h3 { margin:0 0 6px; font-size:16px; color:var(--navy); }
+  .card p { margin:0; font-size:14px; }
+  .foot { margin-top:28px; font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">SIA Copilot · Proposed timeline</div>
+  <h1>STK rule engine by March 2027, all 23 controls automated by December 2027</h1>
+  <p class="lead">Phase 1 moves the release rules from the ADO batch job into STK. Phase 2 automates the first 3 controls on pilot applications. Phase 3 automates the remaining 20 controls in three waves through 2027.</p>
+  <div class="bar"></div>
+
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr><th style="width:17%">Phase</th><th style="width:13%">When</th><th>Scope</th><th style="width:24%">Exit gate</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="phase">0. Design sign-off and preparation</td>
+        <td class="when">Dec 2026</td>
+        <td><b>Design sign-off:</b> SIA Copilot design and STK Rules API approved by Security Architecture and senior management.<br>
+        <b>Preliminary work:</b> nominate control owners and pick 2–3 pilot apps; extract and confirm the batch job's rules; confirm STK fields for pre-fill; request API access to PAM, IGA, SIEM and KMS; start internal LLM and model risk approval; set up the team, environments and the security-owned ADO project.</td>
+        <td class="gate">Design signed off; rules confirmed by owners; access requests raised</td>
+      </tr>
+      <tr class="key">
+        <td class="phase">1. STK rule engine</td>
+        <td class="when">Jan – Mar 2027</td>
+        <td>Build the STK Rules API and rule set (Jan–Feb). Run it in shadow mode beside the batch job (Mar). Replace polling with a service hook.</td>
+        <td class="gate">STK results match the batch job; switch over by 31 Mar 2027</td>
+      </tr>
+      <tr class="key">
+        <td class="phase">2. First 3 controls</td>
+        <td class="when">Apr – Jun 2027</td>
+        <td><span class="chip">AIVM-2 SAST</span><span class="chip">IAM 2 Privileged ID vaulting</span><span class="chip">DP-3 Secrets scan</span><br>Build the decision service, evidence store and PROD gate. Advisory for 4 weeks, then blocking for pilot apps.</td>
+        <td class="gate">3 controls blocking for pilot apps by 30 Jun 2027</td>
+      </tr>
+      <tr>
+        <td class="phase">3a. Remaining scans</td>
+        <td class="when">Jul – Aug 2027</td>
+        <td><span class="chip">AIVM-1</span><span class="chip">MP-1</span><span class="chip">OCP Container</span><span class="chip">VM Container</span><span class="chip">DP-4</span><span class="chip">DP-5</span><span class="chip">NS1</span><br>7 controls</td>
+        <td class="gate">Blocking; more apps onboarded</td>
+      </tr>
+      <tr>
+        <td class="phase">3b. Attestations</td>
+        <td class="when">Sep – Oct 2027</td>
+        <td><span class="chip">DP-2</span><span class="chip">DP-6</span><span class="chip">IAM 3</span><span class="chip">IAM 4</span><span class="chip">IAM 5</span><span class="chip">IAM 6</span><span class="chip">SMA-2</span><span class="chip">AIVM-4</span><br>8 controls</td>
+        <td class="gate">Blocking; API access to PAM, IGA, SIEM and KMS in place</td>
+      </tr>
+      <tr>
+        <td class="phase">3c. AI-assisted controls</td>
+        <td class="when">Sep – Dec 2027</td>
+        <td><span class="chip">AIVM-3</span><span class="chip">IAM 7</span><span class="chip">SMA-1</span><span class="chip">PS1</span><span class="chip">PS2</span><br>5 controls. Advisory from Sep, blocking by Dec once each meets the accuracy threshold.</td>
+        <td class="gate">All 23 controls automated; manual SIA checklist retired by 31 Dec 2027</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="notes">
+    <div class="card"><h3>Why these 3 first</h3><p>They cover all three check methods: a scan (AIVM-2), an API attestation (IAM 2) and an AI-assisted control (DP-3), so the whole framework is proven early.</p></div>
+    <div class="card g"><h3>Why AI starts in September</h3><p>AI controls need about three months in advisory mode to measure accuracy before they can block a release.</p></div>
+    <div class="card"><h3>Application rollout</h3><p>2–3 pilot apps in Q2, wider onboarding with each wave, all applications by December 2027.</p></div>
+  </div>
+
+  <p class="foot">Assumes a dedicated team and design sign-off in December 2026. Waves 3b and 3c depend on API access to the systems of record and on internal LLM approval. Prepared by Ponprakash, Lead Principal AI Security Architect · Internal</p>
+</div>
+</body>
+</html>
